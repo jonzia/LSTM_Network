@@ -14,10 +14,12 @@ This program is an LSTM network written in Python for Tensorflow. The architectu
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 
+
+
 ### What's New in v1.1.0
 The current version is the first fully-functional version of the LSTM program. Check back for future updates!
 
-#### Notes
+### Notes
 **(1)** To use the stock input pipeline, the training datafiles must be CSV files with columns in the following arrangement:
 
 *TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL*
@@ -26,6 +28,6 @@ Note that the timestamp column is ignored by default and any column heading shou
 
 **(2)** The program will output loss for training and validation at each mini-batch.
 
-##### References
+### References
 (1) [Tensorflow's Recurrent Neural Network Tutorials](https://www.tensorflow.org/tutorials/recurrent)
 (2) [Nicholas Locascio's LSTM Tutorial on GitHub](https://github.com/nicholaslocascio/bcs-lstm/blob/master/Lab.ipynb)
