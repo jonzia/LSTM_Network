@@ -3,18 +3,16 @@
 ## Overview
 LSTM network implemented in Tensorflow designed for prediction and classification.
 
-## Description:
+## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The error is calculated via `tf.losses.mean_squared_error` and reduced via `tf.train.AdamOptimizer()`.
 
-## To Run:
+## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
 2. Download repository files.
   a. In *LSTM_main.py*, edit network characteristics in "User-Defined Parameters" field.
   b. Specify files to be used for network training and validation. (1)
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
-
-
 
 ### What's New in v1.1.0
 The current version is the first fully-functional version of the LSTM program. Check back for future updates!
