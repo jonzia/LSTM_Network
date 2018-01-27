@@ -1,4 +1,4 @@
-# LSTM Network in Tensorflow
+# LSTM Network v1.1.0
 
 ## Overview
 LSTM network implemented in Tensorflow designed for prediction and classification.
