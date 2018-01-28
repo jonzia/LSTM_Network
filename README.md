@@ -21,7 +21,8 @@ The current version is the first fully-functional version of the LSTM program. C
 **(1)** To use the stock input pipeline, the training datafiles must be CSV files with columns in the following arrangement:
 
 TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL
-
+----------|-------------------------|------
+... | ... | ...
 
 Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature columns may be variable and is set by the user-defined parameter `INPUT_FEATURES` at the top of the program.
 
