@@ -11,7 +11,7 @@ This program is an LSTM network written in Python for Tensorflow. The architectu
 2. Download repository files.
   a. In *LSTM_main.py*, edit network characteristics in "User-Defined Parameters" field.
   b. Specify files to be used for network training and validation. (1)
-3. Using the terminal or command window, run the python script *LSTM_main.py*. (2)
+3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3)
   - (Optional) The parameters listed under "User-Defined Constants" may be set by the user.
 ```python
 BATCH_SIZE = 5			# Batch size
@@ -36,6 +36,8 @@ TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL
 Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature columns may be variable and is set by the user-defined parameter `INPUT_FEATURES` at the top of the program.
 
 **(2)** The program will output loss for training and validation at each mini-batch.
+
+**(3)** As of v1.1.1, ensure you have installed [pandas](https://pandas.pydata.org/pandas-docs/stable/install.html)!
 
 ### References
 (1) [Tensorflow's Recurrent Neural Network Tutorials](https://www.tensorflow.org/tutorials/recurrent)
