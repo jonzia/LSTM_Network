@@ -1,10 +1,10 @@
-# LSTM Network v1.1.0
+# LSTM Network v1.1.1
 
 ## Overview
 LSTM network implemented in Tensorflow designed for prediction and classification.
 
 ## Description
-This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The error is calculated via `tf.losses.mean_squared_error` and reduced via `tf.train.AdamOptimizer()`.
+This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The error is calculated via `tf.losses.mean_squared_error` and reduced via `tf.train.AdamOptimizer()`. As of v1.1.1, the input pipeline is a rolling-window with offset batches.
 
 ## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
@@ -12,10 +12,19 @@ This program is an LSTM network written in Python for Tensorflow. The architectu
   a. In *LSTM_main.py*, edit network characteristics in "User-Defined Parameters" field.
   b. Specify files to be used for network training and validation. (1)
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2)
+  - (Optional) The parameters listed under "User-Defined Constants" may be set by the user.
+```python
+BATCH_SIZE = 5			# Batch size
+NUM_STEPS = 6			# Max steps for BPTT
+NUM_LSTM_LAYERS = 1		# Number of LSTM layers
+NUM_LSTM_HIDDEN = 5		# Number of LSTM hidden units
+OUTPUT_UNITS = 1		# Number of FCL output units
+INPUT_FEATURES = 9		# Number of input features
+```
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 
-### What's New in v1.1.0
-The current version is the first fully-functional version of the LSTM program. Check back for future updates!
+### What's New in v1.1.1
+Added rolling-window input pipeline. Check back for future updates!
 
 ### Notes
 **(1)** To use the stock input pipeline, the training datafiles must be CSV files with columns in the following arrangement:
