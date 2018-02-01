@@ -1,7 +1,7 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.1.1
+# LSTM Network Implementation using Tensorflow 1.1.2
 # Created by: Jonathan Zia
-# Last Modified: Wednesday, Jan 31, 2018
+# Last Modified: Wednesdsay, Jan 31, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -10,25 +10,26 @@ import numpy as np
 import math
 import csv
 
-
 # ----------------------------------------------------
 # User-Defined Constants
 # ----------------------------------------------------
-BATCH_SIZE = 3			# Batch size
-NUM_STEPS = 4			# Max steps for BPTT
-NUM_LSTM_LAYERS = 1		# Number of LSTM layers
-NUM_LSTM_HIDDEN = 5		# Number of LSTM hidden units
-OUTPUT_UNITS = 1		# Number of FCL output units
-INPUT_FEATURES = 9		# Number of input features
+BATCH_SIZE = 3		# Batch size
+NUM_STEPS = 4		# Max steps for BPTT
+NUM_LSTM_LAYERS = 1	# Number of LSTM layers
+NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
+OUTPUT_UNITS = 1	# Number of FCL output units
+INPUT_FEATURES = 9	# Number of input features
+I_KEEP_PROB = 1.0	# Input keep probability / LSTM cell
+O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 
 # ----------------------------------------------------
 # Input data files
 # ----------------------------------------------------
 # Specify filenames
 with tf.name_scope("Training_Data"):
-	tDataset = "D:\\Dropbox\\Documents\\Projects\\TensorFlow\\UC Irvine Dataset\\dataset\\testdata.csv"
+	tDataset = ""
 with tf.name_scope("Validation_Data"):
-	vDataset = "D:\\Dropbox\\Documents\\Projects\\TensorFlow\\UC Irvine Dataset\\dataset\\testdata.csv"
+	vDataset = ""
 
 # Obtain length of testing and validation datasets
 file_length = len(pd.read_csv(tDataset))
@@ -94,7 +95,11 @@ targets = tf.placeholder(tf.float32, [BATCH_SIZE, NUM_STEPS], name="Target_Place
 with tf.name_scope("LSTM_Network"):
 	cells = []
 	for _ in range(NUM_LSTM_LAYERS):
+		# Creating basic LSTM cell
 		cell = tf.contrib.rnn.BasicLSTMCell(NUM_LSTM_HIDDEN)
+		# Adding dropout wrapper to cell
+		cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=I_KEEP_PROB, output_keep_prob=O_KEEP_PROB)
+		# Stacking LSTM cells
 		cells.append(cell)
 	stacked_lstm = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
 
@@ -137,7 +142,7 @@ optimizer = tf.train.AdamOptimizer().minimize(loss)
 # Run Session
 # ----------------------------------------------------
 init = tf.global_variables_initializer()
-saver = tf.train.Saver({"weights": W, "biases": b, "final_state": state})	# Instantiate Saver class
+saver = tf.train.Saver()	# Instantiate Saver class
 with tf.Session() as sess:
 	# Create Tensorboard graph
 	writer = tf.summary.FileWriter("output", sess.graph)
@@ -145,7 +150,7 @@ with tf.Session() as sess:
 	# Initialize the variables
 	sess.run(init)
 	# Set save path for session
-	save_path = saver.save(sess, "D:\\Dropbox\\Documents\\Projects\\TensorFlow\\tmp\\model.ckpt")
+	save_path = saver.save(sess, "")
 
 	# Start populating the filename queue
 	# Coordinator: Coordinates the termination of a set of threads
