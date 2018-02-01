@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # LSTM Network Implementation using Tensorflow 1.1.1
 # Created by: Jonathan Zia
-# Last Modified: Friday, Jan 26, 2018
+# Last Modified: Thursday, Jan 31, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -14,8 +14,8 @@ import csv
 # ----------------------------------------------------
 # User-Defined Constants
 # ----------------------------------------------------
-BATCH_SIZE = 5			# Batch size
-NUM_STEPS = 6			# Max steps for BPTT
+BATCH_SIZE = 3			# Batch size
+NUM_STEPS = 4			# Max steps for BPTT
 NUM_LSTM_LAYERS = 1		# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5		# Number of LSTM hidden units
 OUTPUT_UNITS = 1		# Number of FCL output units
@@ -137,12 +137,15 @@ optimizer = tf.train.AdamOptimizer().minimize(loss)
 # Run Session
 # ----------------------------------------------------
 init = tf.global_variables_initializer()
+saver = tf.train.Saver({"weights": W, "biases": b, "final_state": state})	# Instantiate Saver class
 with tf.Session() as sess:
 	# Create Tensorboard graph
 	writer = tf.summary.FileWriter("output", sess.graph)
 	merged = tf.summary.merge_all()
 	# Initialize the variables
 	sess.run(init)
+	# Set save path for session
+	save_path = saver.save(sess, "D:\\Dropbox\\Documents\\Projects\\TensorFlow\\tmp\\model.ckpt")
 
 	# Start populating the filename queue
 	# Coordinator: Coordinates the termination of a set of threads
@@ -154,7 +157,6 @@ with tf.Session() as sess:
 	# Set range (prevent index out-of-range exception for rolling window)
 	rng = math.floor((file_length - BATCH_SIZE - NUM_STEPS + 2) / BATCH_SIZE)
 	for step in range(rng):
-
 		# Obtaining batch of features and labels from TRAINING dataset(s)
 		features, labels = extract_data(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, step)
 
@@ -182,6 +184,10 @@ with tf.Session() as sess:
 					loss_test = sess.run(loss, feed_dict=data_test)
 					test_loss.append(loss_test)
 				print("Test loss: %.3f" % np.mean(test_loss))
+
+				# Report percent completion
+				p_completion = 100*step/rng
+				print("Percent completion: %.3f%%\n" % p_completion)
 
 		# Writing summaries to Tensorboard
 		summ = sess.run(merged)
