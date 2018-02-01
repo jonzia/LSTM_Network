@@ -38,6 +38,7 @@ save_path = saver.save(sess, "file_path.csv")
 
 ### Update Log
 _v1.1.2 (current)_: Added ability to save network states and LSTM cell dropout wrappers.
+
 _v1.1.1_: Added rolling-window input pipeline.
 
 ### Notes
