@@ -36,8 +36,9 @@ save_path = saver.save(sess, "file_path.csv")
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 
-### What's New in v1.1.2
-Added rolling-window input pipeline, saving network states, and LSTM cell dropout wrappers.
+### Update Log
+_v1.1.2 (current)_: Added ability to save network states and LSTM cell dropout wrappers.
+_v1.1.1_: Added rolling-window input pipeline.
 
 ### Notes
 **(1)** To use the stock input pipeline, the training datafiles must be CSV files with columns in the following arrangement:
