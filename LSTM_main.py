@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # LSTM Network Implementation using Tensorflow 1.1.1
 # Created by: Jonathan Zia
-# Last Modified: Thursday, Jan 31, 2018
+# Last Modified: Wednesday, Jan 31, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
