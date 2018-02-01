@@ -35,7 +35,7 @@ TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL
 
 Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature columns may be variable and is set by the user-defined parameter `INPUT_FEATURES` at the top of the program.
 
-**(2)** The program will output loss for training and validation as well as percent completion at each mini-batch.
+**(2)** The program will output training loss, validation loss, and percent completion at each mini-batch.
 
 **(3)** As of v1.1.1, ensure you have installed [pandas](https://pandas.pydata.org/pandas-docs/stable/install.html)!
 
