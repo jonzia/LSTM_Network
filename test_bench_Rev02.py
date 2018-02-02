@@ -26,7 +26,7 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 # Input data files
 # ----------------------------------------------------
 # Specify filenames
-with tf.name_scope("Training_Data"):	# Testing dataset
+with tf.name_scope("Validation_Data"):	# Validation dataset
 	Dataset = ""
 with tf.name_scope("Model_Data"):		# Model load path
 	load_path = "model.ckpt"
