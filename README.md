@@ -38,7 +38,15 @@ with tf.name_scope("Filewriter_Data"):	# Filewriter save path
  ```
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
-5. Run *test_bench_Rev02.py* to analyze trained network outputs for a validation dataset.
+5. Run *test_bench_Rev02.py* to analyze trained network outputs for a validation dataset. Ensure to select the correct filepaths for the validation dataset, model load path, and Filewriter save path.
+```python
+with tf.name_scope("Training_Data"):	# Testing dataset
+	Dataset = ""
+with tf.name_scope("Model_Data"):	# Model load path
+	load_path = "model.ckpt"
+with tf.name_scope("Filewriter_Data"):	# Filewriter save path
+	filewriter_path = "test_bench"
+```
 
 ### Update Log
 _v1.1.3_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset.
