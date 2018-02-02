@@ -137,7 +137,7 @@ with tf.name_scope("Reformat_Logits"):
 
 # Obtaining highest integer from target vector for classification
 with tf.name_scope("Reformat_Targets"):
-target_max = tf.reshape(tf.reduce_max(targets,1), [BATCH_SIZE, OUTPUT_UNITS])
+    target_max = tf.reshape(tf.reduce_max(targets,1), [BATCH_SIZE, OUTPUT_UNITS])
 
 # ----------------------------------------------------
 # Calculate Loss and Define Optimizer
