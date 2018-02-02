@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # LSTM Network Implementation using Tensorflow 1.1.2
 # Created by: Jonathan Zia
-# Last Modified: Thursday, Feb 1, 2018
+# Last Modified: Friday, Feb 2, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -139,7 +139,6 @@ with tf.name_scope("Calculate_Logits"):
 # Calculate Loss and Define Optimizer
 # ----------------------------------------------------
 # Calculating mean squared error of labels and logits
-# Perform dimension reduction !!!
 loss = tf.losses.mean_squared_error(targets, logits)
 optimizer = tf.train.AdamOptimizer().minimize(loss)
 
