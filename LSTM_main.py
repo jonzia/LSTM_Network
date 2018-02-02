@@ -14,7 +14,7 @@ import csv
 # User-Defined Constants
 # ----------------------------------------------------
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 5		# Max steps for BPTT
+NUM_STEPS = 3		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_UNITS = 1	# Number of FCL output units
@@ -132,10 +132,11 @@ with tf.name_scope("Append_Output"):
 # Converting logits array to tensor and reshaping the array such that it has the arrangement:
 # [class1 class2] batch = 1
 # [class1 class2] batch = 2 ...
-with tf.name_scope("Calculate_Logits"):
+with tf.name_scope("Reformat_Logits"):
 	logits = tf.reshape(tf.convert_to_tensor(logits), [BATCH_SIZE, OUTPUT_UNITS])
 
 # Obtaining highest integer from target vector for classification
+with tf.name_scope("Reformat_Targets"):
 target_max = tf.reshape(tf.reduce_max(targets,1), [BATCH_SIZE, OUTPUT_UNITS])
 
 # ----------------------------------------------------

@@ -27,9 +27,9 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 # ----------------------------------------------------
 # Specify filenames
 with tf.name_scope("Training_Data"):	# Testing dataset
-	Dataset = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/UC Irvine Dataset/dataset/testdata.csv"
+	Dataset = ""
 with tf.name_scope("Model_Data"):		# Model load path
-	load_path = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/tmp/model.ckpt"
+	load_path = "model.ckpt"
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = "test_bench"
 
