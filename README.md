@@ -6,7 +6,7 @@ LSTM network implemented in Tensorflow designed for prediction and classificatio
 ## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in one of two categories, though the model can be easily expanded in situations where there is more than one category.
 
-![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph112.PNG)
+![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph113.PNG)
 
 ## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
