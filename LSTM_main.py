@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # LSTM Network Implementation using Tensorflow 1.1.2
 # Created by: Jonathan Zia
-# Last Modified: Wednesdsay, Jan 31, 2018
+# Last Modified: Thursday, Feb 1, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -14,7 +14,7 @@ import csv
 # User-Defined Constants
 # ----------------------------------------------------
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 4		# Max steps for BPTT
+NUM_STEPS = 5		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_UNITS = 1	# Number of FCL output units
@@ -26,10 +26,14 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 # Input data files
 # ----------------------------------------------------
 # Specify filenames
-with tf.name_scope("Training_Data"):
-	tDataset = ""
-with tf.name_scope("Validation_Data"):
-	vDataset = ""
+with tf.name_scope("Training_Data"):	# Training dataset
+	tDataset = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/UC Irvine Dataset/dataset/testdata.csv"
+with tf.name_scope("Validation_Data"):	# Validation dataset
+	vDataset = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/UC Irvine Dataset/dataset/testdata.csv"
+with tf.name_scope("Model_Data"):		# Model save path
+	save_path = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/tmp/model.ckpt"
+with tf.name_scope("Filewriter_Data"):	# Filewriter save path
+	filewriter_path = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/output"
 
 # Obtain length of testing and validation datasets
 file_length = len(pd.read_csv(tDataset))
@@ -135,6 +139,7 @@ with tf.name_scope("Calculate_Logits"):
 # Calculate Loss and Define Optimizer
 # ----------------------------------------------------
 # Calculating mean squared error of labels and logits
+# Perform dimension reduction !!!
 loss = tf.losses.mean_squared_error(targets, logits)
 optimizer = tf.train.AdamOptimizer().minimize(loss)
 
@@ -145,18 +150,10 @@ init = tf.global_variables_initializer()
 saver = tf.train.Saver()	# Instantiate Saver class
 with tf.Session() as sess:
 	# Create Tensorboard graph
-	writer = tf.summary.FileWriter("output", sess.graph)
+	writer = tf.summary.FileWriter(filewriter_path, sess.graph)
 	merged = tf.summary.merge_all()
 	# Initialize the variables
 	sess.run(init)
-	# Set save path for session
-	save_path = saver.save(sess, "")
-
-	# Start populating the filename queue
-	# Coordinator: Coordinates the termination of a set of threads
-	# Start_queue_runners: Starts all queue runners in graph
-	coord = tf.train.Coordinator()
-	threads = tf.train.start_queue_runners(coord = coord)
 
 	# Training the network
 	# Set range (prevent index out-of-range exception for rolling window)
@@ -168,12 +165,12 @@ with tf.Session() as sess:
 		# Input data
 		data = {inputs: features, targets:labels}
 		# Run optimizer, loss, and predicted error ops in graph
-		_, loss_train = sess.run([optimizer,loss], feed_dict=data)
+		_, loss_train, logits_, targets_ = sess.run([optimizer,loss, logits, targets], feed_dict=data)
 
 		# Evaluate network and print data in terminal periodically
 		with tf.name_scope("Validation"):
 			if step % 50 == 0:
-				print("Minibatch train loss at step", step, ":", loss_train)
+				print("\nMinibatch train loss at step", step, ":", loss_train)
 
 				# Evaluate network
 				test_loss = []
@@ -194,12 +191,18 @@ with tf.Session() as sess:
 				p_completion = 100*step/rng
 				print("Percent completion: %.3f%%\n" % p_completion)
 
+				# Print logits and targets for reference
+				print("Logits:")
+				print(logits_)
+				print("Targets:")
+				print(targets_)
+
 		# Writing summaries to Tensorboard
 		summ = sess.run(merged)
 		writer.add_summary(summ,step)
-	# Request_Stop: Request that the threads stop
-	# Join: Wait for threads to terminate
-	coord.request_stop()
-	coord.join(threads)
+
+	# Save the session
+	saver.save(sess, save_path)
+
 	# Close the writer
 	writer.close()
