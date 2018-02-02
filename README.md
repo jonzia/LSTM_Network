@@ -40,7 +40,7 @@ with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 5. Run *test_bench_Rev02.py* to analyze trained network outputs for a validation dataset. Ensure to select the correct filepaths for the validation dataset, model load path, and Filewriter save path.
 ```python
-with tf.name_scope("Training_Data"):	# Testing dataset
+with tf.name_scope("Validation_Data"):	# Validation dataset
 	Dataset = ""
 with tf.name_scope("Model_Data"):	# Model load path
 	load_path = "model.ckpt"
