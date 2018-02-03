@@ -1,4 +1,4 @@
-# LSTM Network v1.1.3
+# LSTM Network v1.2.0
 
 ## Overview
 LSTM network implemented in Tensorflow designed for prediction and classification. **(4)**
@@ -6,7 +6,7 @@ LSTM network implemented in Tensorflow designed for prediction and classificatio
 ## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in one of two categories, though the model can be easily expanded in situations where there is more than one category.
 
-![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph113.PNG)
+![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph120.PNG)
 
 ## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
@@ -29,7 +29,14 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 with tf.name_scope("Validation_Data"):
 	vDataset = "file_path.csv"
  ```
-  c. Specify file directory for saving network variables, summaries, and graph.
+  c. (Optional) Pre-process data with *FeatureExtraction.m*. This program is designed to pre-process data from the attached *UC Irvine Freezing of Gait Dataset*, however, custom pre-processing code may be added in the data processing section:
+ ```matlab
+%% ---------------
+% Data Processing
+% ----------------
+...
+ ```
+  d. Specify file directory for saving network variables, summaries, and graph.
  ```python
 with tf.name_scope("Model_Data"):	# Model save path
 	save_path = "/tmp/model.ckpt"
@@ -49,7 +56,7 @@ with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 ```
 
 ### Update Log
-_v1.1.3_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset.
+_v1.2.0_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset. Added feature extraction Matlab script for data pre-processing.
 
 _v1.1.2_: Added ability to save network states and LSTM cell dropout wrappers.
 
