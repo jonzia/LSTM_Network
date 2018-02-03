@@ -1,12 +1,12 @@
-# LSTM Network v1.1.2
+# LSTM Network v1.2.0
 
 ## Overview
 LSTM network implemented in Tensorflow designed for prediction and classification. **(4)**
 
 ## Description
-This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.losses.mean_squared_error` and reduced via `tf.train.AdamOptimizer()`.
+This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in one of two categories, though the model can be easily expanded in situations where there is more than one category.
 
-![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph112.PNG)
+![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph120.PNG)
 
 ## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
@@ -14,7 +14,7 @@ This program is an LSTM network written in Python for Tensorflow. The architectu
   a. In *LSTM_main.py*, edit network characteristics in "User-Defined Parameters" field.
   ```python
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 4		# Max steps for BPTT
+NUM_STEPS = 5		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_UNITS = 1	# Number of FCL output units
@@ -29,15 +29,36 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 with tf.name_scope("Validation_Data"):
 	vDataset = "file_path.csv"
  ```
-  c. Specify file directory for saving network variables.
+  c. (Optional) Pre-process data with *FeatureExtraction.m*. This program is designed to pre-process data from the attached *UC Irvine Freezing of Gait Dataset*, however, custom pre-processing code may be added in the data processing section:
+ ```matlab
+%% ---------------
+% Data Processing
+% ----------------
+...
+ ```
+  d. Specify file directory for saving network variables, summaries, and graph.
  ```python
-save_path = saver.save(sess, "file_path.csv")
+with tf.name_scope("Model_Data"):	# Model save path
+	save_path = "/tmp/model.ckpt"
+with tf.name_scope("Filewriter_Data"):	# Filewriter save path
+	filewriter_path = ""
  ```
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
+5. Run *test_bench_Rev02.py* to analyze trained network outputs for a validation dataset. Ensure to select the correct filepaths for the validation dataset, model load path, and Filewriter save path.
+```python
+with tf.name_scope("Validation_Data"):	# Validation dataset
+	Dataset = ""
+with tf.name_scope("Model_Data"):	# Model load path
+	load_path = "model.ckpt"
+with tf.name_scope("Filewriter_Data"):	# Filewriter save path
+	filewriter_path = "test_bench"
+```
 
 ### Update Log
-_v1.1.2 (current)_: Added ability to save network states and LSTM cell dropout wrappers.
+_v1.2.0_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset. Added feature extraction Matlab script for data pre-processing.
+
+_v1.1.2_: Added ability to save network states and LSTM cell dropout wrappers.
 
 _v1.1.1_: Added rolling-window input pipeline.
 

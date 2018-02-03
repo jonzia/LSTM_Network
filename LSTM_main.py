@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.1.2
+# LSTM Network Implementation using Tensorflow 1.2.0
 # Created by: Jonathan Zia
 # Last Modified: Friday, Feb 2, 2018
 # Georgia Institute of Technology
@@ -14,7 +14,7 @@ import csv
 # User-Defined Constants
 # ----------------------------------------------------
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 5		# Max steps for BPTT
+NUM_STEPS = 3		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_UNITS = 1	# Number of FCL output units
@@ -27,13 +27,13 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 # ----------------------------------------------------
 # Specify filenames
 with tf.name_scope("Training_Data"):	# Training dataset
-	tDataset = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/UC Irvine Dataset/dataset/testdata.csv"
+	tDataset = ""
 with tf.name_scope("Validation_Data"):	# Validation dataset
-	vDataset = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/UC Irvine Dataset/dataset/testdata.csv"
+	vDataset = ""
 with tf.name_scope("Model_Data"):		# Model save path
-	save_path = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/tmp/model.ckpt"
+	save_path = "/tmp/model.ckpt"
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
-	filewriter_path = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow/output"
+	filewriter_path = ""
 
 # Obtain length of testing and validation datasets
 file_length = len(pd.read_csv(tDataset))
@@ -121,26 +121,34 @@ with tf.name_scope("Dynamic_RNN"):
 	for i in range(NUM_STEPS):
 		# Obtain output at each step
 		output, state = tf.nn.dynamic_rnn(stacked_lstm, inputs[:,i:i+1,:], initial_state=state)
-		# Reshape output to remove extra dimension
-		output = tf.reshape(output,[BATCH_SIZE,NUM_LSTM_HIDDEN])
-
-		with tf.name_scope("Append_Output"):
-			# Obtain logits by passing output
-			for j in range(BATCH_SIZE):
-				logit = tf.nn.sigmoid(tf.matmul(output[j:j+1,:], W) + b)
-				logits.append(logit)
+# Obtain final output and convert to logit
+# Reshape output to remove extra dimension
+output = tf.reshape(output,[BATCH_SIZE,NUM_LSTM_HIDDEN])
+with tf.name_scope("Append_Output"):
+	# Obtain logits by passing output
+	for j in range(BATCH_SIZE):
+		logit = tf.matmul(output[j:j+1,:], W) + b
+		logits.append(logit)
 # Converting logits array to tensor and reshaping the array such that it has the arrangement:
-# [time1 time2] batch = 1
-# [time1 time2] batch = 2 ...
-with tf.name_scope("Calculate_Logits"):
-	logits = tf.reshape(tf.convert_to_tensor(logits), [BATCH_SIZE, NUM_STEPS])
+# [class1 class2] batch = 1
+# [class1 class2] batch = 2 ...
+with tf.name_scope("Reformat_Logits"):
+	logits = tf.reshape(tf.convert_to_tensor(logits), [BATCH_SIZE, OUTPUT_UNITS])
+
+# Obtaining highest integer from target vector for classification
+with tf.name_scope("Reformat_Targets"):
+    target_max = tf.reshape(tf.reduce_max(targets,1), [BATCH_SIZE, OUTPUT_UNITS])
 
 # ----------------------------------------------------
 # Calculate Loss and Define Optimizer
 # ----------------------------------------------------
-# Calculating mean squared error of labels and logits
-loss = tf.losses.mean_squared_error(targets, logits)
+# Calculating sigmoid cross entropy of labels and logits
+loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=target_max, logits=logits)
+loss = tf.reduce_mean(loss)
 optimizer = tf.train.AdamOptimizer().minimize(loss)
+
+# Obtain predictions from logits
+predictions = tf.sigmoid(logits)
 
 # ----------------------------------------------------
 # Run Session
@@ -164,12 +172,12 @@ with tf.Session() as sess:
 		# Input data
 		data = {inputs: features, targets:labels}
 		# Run optimizer, loss, and predicted error ops in graph
-		_, loss_train, logits_, targets_ = sess.run([optimizer,loss, logits, targets], feed_dict=data)
+		predictions_, targets_, _, loss_ = sess.run([predictions, target_max, optimizer, loss], feed_dict=data)
 
 		# Evaluate network and print data in terminal periodically
 		with tf.name_scope("Validation"):
 			if step % 50 == 0:
-				print("\nMinibatch train loss at step", step, ":", loss_train)
+				print("\nMinibatch train loss at step", step, ":", loss_)
 
 				# Evaluate network
 				test_loss = []
@@ -190,9 +198,9 @@ with tf.Session() as sess:
 				p_completion = 100*step/rng
 				print("Percent completion: %.3f%%\n" % p_completion)
 
-				# Print logits and targets for reference
-				print("Logits:")
-				print(logits_)
+				# Print predictiond and targets for reference
+				print("Predictions:")
+				print(predictions_)
 				print("Targets:")
 				print(targets_)
 
