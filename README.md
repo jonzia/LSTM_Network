@@ -1,7 +1,7 @@
 # LSTM Network v1.2.1
 
 ## Overview
-LSTM network implemented in Tensorflow designed for prediction and classification. **(4)**
+LSTM network implemented in Tensorflow designed for time-series prediction and classification. Check out the [demo](https://youtu.be/DSzegLte0Iw) and [design blog](https://www.jonzia.me/projects/fog-problem)!
 
 ## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in one of two categories, though the model can be easily expanded in situations where there is more than one category.
@@ -78,8 +78,6 @@ Note that the timestamp column is ignored by default and any column heading shou
 **(2)** The program will output training loss, validation loss, percent completion and predictions/targets at each mini-batch.
 
 **(3)** As of v1.1.1, ensure you have installed [pandas](https://pandas.pydata.org/pandas-docs/stable/install.html)!
-
-**(4)** If you'd like to learn more about the design process and motivation for this program, feel free to check out my [blog](https://www.jonzia.me/projects/fog-problem)!
 
 ### References
 (1) [Tensorflow's Recurrent Neural Network Tutorials](https://www.tensorflow.org/tutorials/recurrent)
