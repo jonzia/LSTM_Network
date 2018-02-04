@@ -32,6 +32,7 @@ with tf.name_scope("Validation_Data"):
 	vDataset = "file_path.csv"
  ```
   c. (Optional) Pre-process data with *FeatureExtraction.m*. This program is designed to pre-process data from the attached *UC Irvine Freezing of Gait Dataset*, however, custom pre-processing code may be added in the data processing section.
+  
   d. Specify file directory for saving network variables, summaries, and graph.
  ```python
 with tf.name_scope("Model_Data"):	# Model save path
