@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # LSTM Network Test Bench for LSTM_Network v1.2.0
 # Created by: Jonathan Zia
-# Last Modified: Thursday, Feb 1, 2018
+# Last Modified: Sunday, Feb 4, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -14,7 +14,7 @@ import csv
 # User-Defined Constants
 # ----------------------------------------------------
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 3		# Max steps for BPTT
+NUM_STEPS = 500		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_UNITS = 1	# Number of FCL output units
@@ -26,12 +26,16 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 # Input data files
 # ----------------------------------------------------
 # Specify filenames
-with tf.name_scope("Validation_Data"):	# Validation dataset
+with tf.name_scope("Training_Data"):	# Testing dataset
 	Dataset = ""
 with tf.name_scope("Model_Data"):		# Model load path
-	load_path = "model.ckpt"
+	load_path = "...\\tmp\\model.ckpt"
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
-	filewriter_path = "test_bench"
+	filewriter_path = "...test_bench"
+with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
+	# These .txt files will contain prediction and target data respectively for Matlab analysis
+	prediction_file = "...\\predictions.txt"
+	target_file = "...\\targets.txt"
 
 # Obtain length of testing and validation datasets
 file_length = len(pd.read_csv(Dataset))
@@ -170,12 +174,25 @@ with tf.Session() as sess:
 		summary, loss_, pred, tar = sess.run([merged, loss, predictions, target_max], feed_dict=data)
 
 		# Report parameters
-		p_completion = math.floor(100*step/rng)
-		print("\nLoss: %.3f, Percent Completion: " % loss_, p_completion)
-		print("\nPredictions:")
-		print(pred)
-		print("\nTargets:")
-		print(tar)
+		if loss_ > 0.0:	# Conditional statement for filtering outputs
+			p_completion = math.floor(100*step/rng)
+			print("\nLoss: %.3f, Percent Completion: " % loss_, p_completion)
+			print("\nPredictions:")
+			print(pred)
+			print("\nTargets:")
+			print(tar)
+
+			# Write results to .txt file for Matlab analysis
+			print_predictions = str(tf.reduce_mean(pred).eval())
+			print_targets = str(tf.reduce_mean(tar).eval())
+			# Write predictions
+			with open(prediction_file, 'a') as file_object:
+				file_object.write(print_predictions)
+				file_object.write("\n")
+			# Write targets
+			with open(target_file, 'a') as file_object:
+				file_object.write(print_targets)
+				file_object.write("\n")
 
 		# Writing summaries to Tensorboard
 		writer.add_summary(summary,step)
