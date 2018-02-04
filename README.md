@@ -1,10 +1,12 @@
-# LSTM Network v1.2.0
+# LSTM Network v1.2.1
 
 ## Overview
 LSTM network implemented in Tensorflow designed for prediction and classification. **(4)**
 
 ## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in one of two categories, though the model can be easily expanded in situations where there is more than one category.
+
+Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. This package includes the UC Irvine Freezing of Gait data repository (converted to .csv file format) for which this program was designed as well as a *testdata.csv* file formatted for testing network function.
 
 ![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph120.PNG)
 
@@ -29,13 +31,7 @@ O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 with tf.name_scope("Validation_Data"):
 	vDataset = "file_path.csv"
  ```
-  c. (Optional) Pre-process data with *FeatureExtraction.m*. This program is designed to pre-process data from the attached *UC Irvine Freezing of Gait Dataset*, however, custom pre-processing code may be added in the data processing section:
- ```matlab
-%% ---------------
-% Data Processing
-% ----------------
-...
- ```
+  c. (Optional) Pre-process data with *FeatureExtraction.m*. This program is designed to pre-process data from the attached *UC Irvine Freezing of Gait Dataset*, however, custom pre-processing code may be added in the data processing section.
   d. Specify file directory for saving network variables, summaries, and graph.
  ```python
 with tf.name_scope("Model_Data"):	# Model save path
@@ -45,17 +41,24 @@ with tf.name_scope("Filewriter_Data"):	# Filewriter save path
  ```
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
-5. Run *test_bench_Rev02.py* to analyze trained network outputs for a validation dataset. Ensure to select the correct filepaths for the validation dataset, model load path, and Filewriter save path.
+5. (Optional) Run *test_bench.py* to analyze trained network outputs for a validation dataset. Ensure to select the correct filepaths for the validation dataset, and model load path, as well as the desired Filewriter save path and output .txt filenames. For proper analysis, also ensure that the user-defined parameters at the file header are the same as those used for training the network.
 ```python
 with tf.name_scope("Validation_Data"):	# Validation dataset
 	Dataset = ""
 with tf.name_scope("Model_Data"):	# Model load path
-	load_path = "model.ckpt"
+	load_path = ".../tmp/model.ckpt"
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
-	filewriter_path = "test_bench"
+	filewriter_path = ".../test_bench"
+with tf.name_scope("Output_Data"):	# Output data filenames (.txt)
+	# These .txt files will contain prediction and target data respectively for Matlab analysis
+	prediction_file = ".../predictions.txt"
+	target_file = ".../targets.txt"
 ```
+6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom in the data analysis section.
 
 ### Update Log
+_v1.2.1_: Updated test bench to output predictions and targets to .txt file for Matlab analysis. Added Matlab program for analysis of the trained LSTM network.
+
 _v1.2.0_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset. Added feature extraction Matlab script for data pre-processing.
 
 _v1.1.2_: Added ability to save network states and LSTM cell dropout wrappers.
@@ -71,7 +74,7 @@ TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL
 
 Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature columns may be variable and is set by the user-defined parameter `INPUT_FEATURES` at the top of the program.
 
-**(2)** The program will output training loss, validation loss, and percent completion at each mini-batch.
+**(2)** The program will output training loss, validation loss, percent completion and predictions/targets at each mini-batch.
 
 **(3)** As of v1.1.1, ensure you have installed [pandas](https://pandas.pydata.org/pandas-docs/stable/install.html)!
 
