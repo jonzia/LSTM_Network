@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.2.0
+# LSTM Network Implementation using Tensorflow 1.2.1
 # Created by: Jonathan Zia
 # Last Modified: Friday, Feb 2, 2018
 # Georgia Institute of Technology
