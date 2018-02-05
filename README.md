@@ -1,12 +1,12 @@
-# LSTM Network v1.2.1
+# LSTM Network v1.2.2
 
 ## Overview
 LSTM network implemented in Tensorflow designed for time-series prediction and classification. Check out the [demo](https://youtu.be/DSzegLte0Iw) and [design blog](https://www.jonzia.me/projects/fog-problem)!
 
 ## Description
-This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in one of two categories, though the model can be easily expanded in situations where there is more than one category.
+This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in two or more categories, either one-hot or binary-encoded.
 
-Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. This package includes the UC Irvine Freezing of Gait data repository (converted to .csv file format) for which this program was designed as well as a *testdata.csv* file formatted for testing network function.
+Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. This package includes the UC Irvine Freezing of Gait data repository (converted to .csv file format) for which this program was designed. *FeatureExtraction.m* contains code designed for pre-processing the provided FoG data, however the data processing section may be adapted for any purpose. The same is true of *NetworkAnalysis.m*, which contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification, though it may also be adapted for any purpose.
 
 ![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph120.PNG)
 
@@ -16,10 +16,10 @@ Included with the LSTM program are Matlab and Python programs for processing .cs
   a. In *LSTM_main.py*, edit network characteristics in "User-Defined Parameters" field.
   ```python
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 5		# Max steps for BPTT
+NUM_STEPS = 3		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
-OUTPUT_UNITS = 1	# Number of FCL output units
+OUTPUT_CLASSES = 3	# Number of classes / FCL output units
 INPUT_FEATURES = 9	# Number of input features
 I_KEEP_PROB = 1.0	# Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
@@ -58,6 +58,8 @@ with tf.name_scope("Output_Data"):	# Output data filenames (.txt)
 6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom in the data analysis section.
 
 ### Update Log
+_v1.2.2_: Added capability for >2 target categories (vs. binary classification).
+
 _v1.2.1_: Updated test bench to output predictions and targets to .txt file for Matlab analysis. Added Matlab program for analysis of the trained LSTM network.
 
 _v1.2.0_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset. Added feature extraction Matlab script for data pre-processing.
@@ -69,11 +71,11 @@ _v1.1.1_: Added rolling-window input pipeline.
 ### Notes
 **(1)** To use the stock input pipeline, the training datafiles must be CSV files with columns in the following arrangement:
 
-TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL
+TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL_1 ... LABEL_M
 ----------|-------------------------|------
 ... | ... | ...
 
-Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature columns may be variable and is set by the user-defined parameter `INPUT_FEATURES` at the top of the program.
+Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature and label columns may be variable and is set by the user-defined parameters `INPUT_FEATURES` and `OUTPUT_CLASSES` respectively at the top of the program.
 
 **(2)** The program will output training loss, validation loss, percent completion and predictions/targets at each mini-batch.
 
