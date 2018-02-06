@@ -16,13 +16,14 @@ Included with the LSTM program are Matlab and Python programs for processing .cs
   a. In *LSTM_main.py*, edit network characteristics in "User-Defined Parameters" field.
   ```python
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 3		# Max steps for BPTT
+NUM_STEPS = 100		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_CLASSES = 3	# Number of classes / FCL output units
 INPUT_FEATURES = 9	# Number of input features
 I_KEEP_PROB = 1.0	# Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
+WINDOW_INT = 10		# Rolling window step interval
 ```
   b. Specify files to be used for network training and validation. (1)
  ```python
