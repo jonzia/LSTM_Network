@@ -59,7 +59,7 @@ with tf.name_scope("Output_Data"):	# Output data filenames (.txt)
 6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom in the data analysis section.
 
 ### Update Log
-_v1.2.2_: Added capability for >2 target categories (vs. binary classification) and rolling window step interval for increased training time and decreased overfitting.
+_v1.2.2_: Added capability for >2 target categories (vs. binary classification) and rolling window step interval for decreasing training time overfitting likelihood.
 
 _v1.2.1_: Updated test bench to output predictions and targets to .txt file for Matlab analysis. Added Matlab program for analysis of the trained LSTM network.
 
