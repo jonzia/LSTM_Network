@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # LSTM Network Implementation using Tensorflow 1.2.2
 # Created by: Jonathan Zia
-# Last Modified: Monday, Feb 5, 2018
+# Last Modified: Tuesday, Feb 6, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -14,13 +14,14 @@ import csv
 # User-Defined Constants
 # ----------------------------------------------------
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 3		# Max steps for BPTT
+NUM_STEPS = 100		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_CLASSES = 3	# Number of classes / FCL output units
 INPUT_FEATURES = 9	# Number of input features
 I_KEEP_PROB = 1.0	# Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
+WINDOW_INT = 10		# Rolling window step interval
 
 # ----------------------------------------------------
 # Input data files
@@ -163,7 +164,8 @@ with tf.Session() as sess:
         # Training the network
         # Set range (prevent index out-of-range exception for rolling window)
         rng = math.floor((file_length - BATCH_SIZE - NUM_STEPS + 2) / BATCH_SIZE)
-        for step in range(rng):
+        # Set rolling window step between batches to WINDOW_INT
+        for step in range(0,rng,WINDOW_INT):
             # Obtaining batch of features and labels from TRAINING dataset(s)
             features, labels = extract_data(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step)
                 
@@ -181,7 +183,7 @@ with tf.Session() as sess:
                             test_loss = []
                                 # Set range (prevent index out-of-range exception for rolling window)
                                 v_rng = math.floor((v_file_length - BATCH_SIZE - NUM_STEPS + 2) / BATCH_SIZE)
-                                for step_num in range(v_rng):
+                                for step_num in range(0,v_rng,WINDOW_INT):
                                     
                                     # Obtaining batch of features and labels from VALIDATION dataset(s)
                                     v_features, v_labels =  extract_data(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step_num)
@@ -200,14 +202,14 @@ with tf.Session() as sess:
                                 print("Predictions:")
                                 print(predictions_)
                                 print("Targets:")
-                                    print(targets_)
+                                print(targets_)
+                                
+                                # Save and overwrite the session
+                                    saver.save(sess, save_path)
                 
                 # Writing summaries to Tensorboard
                 summ = sess.run(merged)
             writer.add_summary(summ,step)
     
-    # Save the session
-    saver.save(sess, save_path)
-        
-        # Close the writer
-        writer.close()
+    # Close the writer
+    writer.close()
