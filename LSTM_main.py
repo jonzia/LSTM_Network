@@ -148,7 +148,7 @@ loss = tf.reduce_mean(loss)
 optimizer = tf.train.AdamOptimizer().minimize(loss)
 
 # Obtain predictions from logits
-predictions = tf.softmax(logits)
+predictions = tf.nn.softmax(logits)
 
 # ----------------------------------------------------
 # Run Session
