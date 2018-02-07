@@ -82,17 +82,6 @@ for file = 1:num_files(2)   % For each file...
     end
 end
 
-% Update labels into one-hot three-category classification:
-% non-FoG:  [1 0 0]
-% pre-FoG:  [0 1 0] "non-FoG" datapoints occuring within 'n' steps of FoG
-% FoG:      [0 0 1]
-for file = 1:num_files(2)   % For each file...
-    num_elem = size(data{file});   % Obtain number of datapoints
-    for i = 1:num_elem(1)   % For each datapoint in file...
-        
-    end
-end
-
 %% ------------------------------------------------------------------------
 % Create Output CSV Files
 % -------------------------------------------------------------------------
