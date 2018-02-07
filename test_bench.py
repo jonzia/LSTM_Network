@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# LSTM Network Test Bench for LSTM_Network v1.2.2
+# LSTM Network Test Bench for LSTM_Network v1.2.3
 # Created by: Jonathan Zia
 # Last Modified: Monday, Feb 5, 2018
 # Georgia Institute of Technology
@@ -14,7 +14,7 @@ import csv
 # User-Defined Constants
 # ----------------------------------------------------
 BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 3		# Max steps for BPTT
+NUM_STEPS = 100		# Max steps for BPTT
 NUM_LSTM_LAYERS = 1	# Number of LSTM layers
 NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
 OUTPUT_CLASSES = 3	# Number of classes / FCL output units
