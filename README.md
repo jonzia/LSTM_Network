@@ -8,7 +8,7 @@ This program is an LSTM network written in Python for Tensorflow. The architectu
 
 Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. This package includes the UC Irvine Freezing of Gait data repository (converted to .csv file format) for which this program was designed. *FeatureExtraction.m* contains code designed for pre-processing the provided FoG data, however the data processing section may be adapted for any purpose. The same is true of *NetworkAnalysis.m*, which contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification, though it may also be adapted for any purpose.
 
-![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph120.PNG)
+![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph122.PNG)
 
 ## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
