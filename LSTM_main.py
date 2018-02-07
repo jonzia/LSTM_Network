@@ -142,13 +142,13 @@ with tf.name_scope("Reformat_Logits"):
 # ----------------------------------------------------
 # Calculate Loss and Define Optimizer
 # ----------------------------------------------------
-# Calculating sigmoid cross entropy of labels and logits
-loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits)
+# Calculating softmax cross entropy of labels and logits
+loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=targets, logits=logits)
 loss = tf.reduce_mean(loss)
 optimizer = tf.train.AdamOptimizer().minimize(loss)
 
 # Obtain predictions from logits
-predictions = tf.sigmoid(logits)
+predictions = tf.softmax(logits)
 
 # ----------------------------------------------------
 # Run Session
