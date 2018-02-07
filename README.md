@@ -1,4 +1,4 @@
-# LSTM Network v1.2.2
+# LSTM Network v1.2.3
 
 ## Overview
 LSTM network implemented in Tensorflow designed for time-series prediction and classification. Check out the [demo](https://youtu.be/DSzegLte0Iw) and [design blog](https://www.jonzia.me/projects/fog-problem)!
@@ -6,7 +6,7 @@ LSTM network implemented in Tensorflow designed for time-series prediction and c
 ## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline is a rolling-window with offset batches with customizable batch size and truncated BPTT length. The error is calculated via `tf.nn.sigmoid_cross_entropy` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in two or more categories, either one-hot or binary-encoded.
 
-Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. This package includes the UC Irvine Freezing of Gait data repository (converted to .csv file format) for which this program was designed. *FeatureExtraction.m* contains code designed for pre-processing the provided FoG data, however the data processing section may be adapted for any purpose. The same is true of *NetworkAnalysis.m*, which contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification, though it may also be adapted for any purpose.
+Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. This package includes the UC Irvine Freezing of Gait data repository (converted to .csv file format) for which this program was designed. *FeatureExtraction.m* contains code designed for pre-processing the provided FoG data, however the data processing section may be adapted for any purpose. *NetworkAnalysis.m*, contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification and classifying outputs via Matlab's clasificationLearner, though it may also be adapted for any purpose.
 
 ![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph122.PNG)
 
@@ -23,7 +23,8 @@ OUTPUT_CLASSES = 3	# Number of classes / FCL output units
 INPUT_FEATURES = 9	# Number of input features
 I_KEEP_PROB = 1.0	# Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
-WINDOW_INT = 10		# Rolling window step interval
+WINDOW_INT_t = 1	# Rolling window step interval for training
+WINDOW_INT_v = 10	# Rolling window step interval for validation
 ```
   b. Specify files to be used for network training and validation. (1)
  ```python
@@ -37,18 +38,18 @@ with tf.name_scope("Validation_Data"):
   d. Specify file directory for saving network variables, summaries, and graph.
  ```python
 with tf.name_scope("Model_Data"):	# Model save path
-	save_path = "/tmp/model.ckpt"
+	save_path = "/tmp/model"
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
-	filewriter_path = ""
+	filewriter_path = "/output"
  ```
 3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
-5. (Optional) Run *test_bench.py* to analyze trained network outputs for a validation dataset. Ensure to select the correct filepaths for the validation dataset, and model load path, as well as the desired Filewriter save path and output .txt filenames. For proper analysis, also ensure that the user-defined parameters at the file header are the same as those used for training the network.
+5. (Optional) Run *test_bench.py* to analyze trained network outputs for a validation dataset (predictions and targets saved as .txt files). Ensure to select the correct filepaths for the validation dataset, and model load path, as well as the desired Filewriter save path and output .txt filenames. For proper analysis, also ensure that the user-defined parameters at the file header are the same as those used for training the network.
 ```python
 with tf.name_scope("Validation_Data"):	# Validation dataset
 	Dataset = ""
 with tf.name_scope("Model_Data"):	# Model load path
-	load_path = ".../tmp/model.ckpt"
+	load_path = ".../tmp/model"
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = ".../test_bench"
 with tf.name_scope("Output_Data"):	# Output data filenames (.txt)
@@ -56,18 +57,18 @@ with tf.name_scope("Output_Data"):	# Output data filenames (.txt)
 	prediction_file = ".../predictions.txt"
 	target_file = ".../targets.txt"
 ```
-6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom in the data analysis section.
+6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom in the data analysis section. Data may be fed into Matlab's classificationLearner to update the classification rule from the simple `round(predictions)` example provided.
+
+![Example NetworkAnalysis.m Output](https://github.com/jonzia/LSTM_Network/blob/master/Media/ExamplePredictionAnalysis.png)
 
 ### Update Log
+_v1.2.3_: Added classification learning capability for trained network outputs and ability to conditionally call optimizer when running the session to mitigate class imbalance.
+
 _v1.2.2_: Added capability for >2 target categories (vs. binary classification) and rolling window step interval for decreasing training time overfitting likelihood.
 
 _v1.2.1_: Updated test bench to output predictions and targets to .txt file for Matlab analysis. Added Matlab program for analysis of the trained LSTM network.
 
-_v1.2.0_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset. Added feature extraction Matlab script for data pre-processing.
-
-_v1.1.2_: Added ability to save network states and LSTM cell dropout wrappers.
-
-_v1.1.1_: Added rolling-window input pipeline.
+_v1.1.1_ - _v1.2.0_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset. Added feature extraction Matlab script for data pre-processing. Added ability to save network states and LSTM cell dropout wrappers. Added rolling-window input pipeline.
 
 ### Notes
 **(1)** To use the stock input pipeline, the training datafiles must be CSV files with columns in the following arrangement:
