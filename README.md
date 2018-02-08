@@ -1,4 +1,4 @@
-# LSTM Network v1.2.3
+# LSTM Network v1.2.4
 
 ## Overview
 LSTM network implemented in Tensorflow designed for time-series prediction and classification. Check out the [demo](https://youtu.be/DSzegLte0Iw) and [design blog](https://www.jonzia.me/projects/fog-problem)!
@@ -25,6 +25,7 @@ I_KEEP_PROB = 1.0	# Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
 WINDOW_INT_t = 1	# Rolling window step interval for training
 WINDOW_INT_v = 10	# Rolling window step interval for validation
+LOAD_FILE = False    	# Load initial LSTM model from saved checkpoint?
 ```
   b. Specify files to be used for network training and validation. (1)
  ```python
@@ -42,7 +43,7 @@ with tf.name_scope("Model_Data"):	# Model save path
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = "/output"
  ```
-3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3)
+3. Using the terminal or command window, run the python script *LSTM_main.py*. (2) (3) (4)
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 5. (Optional) Run *test_bench.py* to analyze trained network outputs for a validation dataset (predictions and targets saved as .txt files). Ensure to select the correct filepaths for the validation dataset, and model load path, as well as the desired Filewriter save path and output .txt filenames. For proper analysis, also ensure that the user-defined parameters at the file header are the same as those used for training the network.
 ```python
@@ -62,6 +63,8 @@ with tf.name_scope("Output_Data"):	# Output data filenames (.txt)
 ![Example NetworkAnalysis.m Output](https://github.com/jonzia/LSTM_Network/blob/master/Media/ExamplePredictionAnalysis.png)
 
 ### Update Log
+_v1.2.4_: Improved exception handling and added ability to load partially-trained networks to resume training.
+
 _v1.2.3_: Added classification learning capability for trained network outputs and ability to conditionally call optimizer when running the session to mitigate class imbalance.
 
 _v1.2.2_: Added capability for >2 target categories (vs. binary classification) and rolling window step interval for decreasing training time overfitting likelihood.
@@ -82,6 +85,8 @@ Note that the timestamp column is ignored by default and any column heading shou
 **(2)** The program will output training loss, validation loss, percent completion and predictions/targets at each mini-batch.
 
 **(3)** As of v1.1.1, ensure you have installed [pandas](https://pandas.pydata.org/pandas-docs/stable/install.html)!
+
+**(4)** As of v1.2.3, ensure that you have the most recent version of Tensorflow installed (1.5).
 
 ### References
 (1) [Tensorflow's Recurrent Neural Network Tutorials](https://www.tensorflow.org/tutorials/recurrent)
