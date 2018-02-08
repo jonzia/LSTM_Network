@@ -1,7 +1,7 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.2.3
+# LSTM Network Implementation using Tensorflow 1.2.4
 # Created by: Jonathan Zia
-# Last Modified: Wednesday, Feb 7, 2018
+# Last Modified: Thursday, Feb 8, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -22,7 +22,9 @@ INPUT_FEATURES = 9  # Number of input features
 I_KEEP_PROB = 1.0   # Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0   # Output keep probability / LSTM cell
 WINDOW_INT_t = 1    # Rolling window step interval for training
-WINDOW_INT_v = 10   # Rolling window step interval for validation
+WINDOW_INT_v = 100  # Rolling window step interval for validation
+LOAD_FILE = False    # Load initial LSTM model from saved checkpoint?
+
 
 # ----------------------------------------------------
 # Input data files
@@ -54,7 +56,7 @@ def init_values(shape):
     temp = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(temp)
 
-def extract_data(filename, batch_size, num_steps, input_features, output_classes, epoch):
+def extract_data(filename, batch_size, num_steps, input_features, output_classes, minibatch):
     """
     Extract features and labels from filename.csv in rolling-window batches
     Returns:
@@ -67,15 +69,15 @@ def extract_data(filename, batch_size, num_steps, input_features, output_classes
     label_batch = np.zeros((batch_size, output_classes))
 
     # Import data from CSV as a sliding window:
-    # First, import data starting from t = epoch to t = epoch + num_steps
+    # First, import data starting from t = minibatch to t = minibatch + num_steps
     # ... add feature data to feature_batch[0, :, :]
     # ... add label data to label_batch[batch, :, :]
-    # Then, import data starting from t = epoch + 1 to t = epoch + num_steps + 1
+    # Then, import data starting from t = minibatch + 1 to t = minibatch + num_steps + 1
     # ... add feature data to feature_batch[1, :, :]
     # ... add label data to label_batch[batch, :]
     # Repeat for all batches.
     for i in range(batch_size):
-        temp = pd.read_csv(filename, skiprows=epoch*batch_size+i, nrows=num_steps, header=None)
+        temp = pd.read_csv(filename, skiprows=minibatch*batch_size+i, nrows=num_steps, header=None)
         temp = temp.as_matrix()
         # Return features in specified columns
         feature_batch[i,:,:] = temp[:,1:input_features+1]
@@ -139,6 +141,7 @@ with tf.name_scope("Append_Output"):
 with tf.name_scope("Reformat_Logits"):
     logits = tf.reshape(tf.convert_to_tensor(logits), [BATCH_SIZE, OUTPUT_CLASSES])
 
+
 # ----------------------------------------------------
 # Calculate Loss and Define Optimizer
 # ----------------------------------------------------
@@ -149,6 +152,10 @@ optimizer = tf.train.AdamOptimizer().minimize(loss)
 
 # Obtain predictions from logits
 predictions = tf.nn.softmax(logits)
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/master
 
 # ----------------------------------------------------
 # Run Session
@@ -159,19 +166,27 @@ with tf.Session() as sess:
     # Create Tensorboard graph
     writer = tf.summary.FileWriter(filewriter_path, sess.graph)
     merged = tf.summary.merge_all()
-    # Initialize the variables
-    sess.run(init)
+
+    # If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
+    if LOAD_FILE:
+        # Restore saved session
+        saver.restore(sess, save_path)
+    else:
+        # Initialize the variables
+        sess.run(init)
 
     # Training the network
-    # Set range (prevent index out-of-range exception for rolling window)
-    rng = math.floor((file_length - BATCH_SIZE - NUM_STEPS + 2) / BATCH_SIZE)
     # Set rolling window step between batches to WINDOW_INT
-    for step in range(0,rng,WINDOW_INT_t):
-        # Obtaining batch of features and labels from TRAINING dataset(s)
-        features, labels = extract_data(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step)
+    for step in range(0,file_length,WINDOW_INT_t):
+        try:    # While there is no out-of-bounds exception...
+
+            # Obtaining batch of features and labels from TRAINING dataset(s)
+            features, labels = extract_data(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step)
+        except:
+            break
 
         # Set conditional statement for performing optimization/analysis
-        if True:
+        if (True):
             # Input data
             data = {inputs: features, targets:labels}
             # Run optimizer, loss, and predicted error ops in graph
@@ -179,27 +194,29 @@ with tf.Session() as sess:
 
             # Evaluate network and print data in terminal periodically
             with tf.name_scope("Validation"):
-                # Set conditional statement for validation and printing
+                # Conditional statement for validation and printing
                 if step % 50 == 0:
                     print("\nMinibatch train loss at step", step, ":", loss_)
 
                     # Evaluate network
                     test_loss = []
-                    # Set range (prevent index out-of-range exception for rolling window)
-                    v_rng = math.floor((v_file_length - BATCH_SIZE - NUM_STEPS + 2) / BATCH_SIZE)
-                    for step_num in range(0,v_rng,WINDOW_INT_v):
+                    for step_num in range(0,v_file_length,WINDOW_INT_v):
+                        try:    # While there is no out-of-bounds exception...
 
-                        # Obtaining batch of features and labels from VALIDATION dataset(s)
-                        v_features, v_labels =  extract_data(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step_num)
-
+                            # Obtaining batch of features and labels from VALIDATION dataset(s)
+                            v_features, v_labels =  extract_data(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step_num)
+                        except:
+                            break
+                        
                         # Input data and run session to find loss
                         data_test = {inputs: v_features, targets: v_labels}
                         loss_test = sess.run(loss, feed_dict=data_test)
                         test_loss.append(loss_test)
+
                     print("Test loss: %.3f" % np.mean(test_loss))
 
                     # Report percent completion
-                    p_completion = 100*step/rng
+                    p_completion = 100*step/file_length
                     print("Percent completion: %.3f%%\n" % p_completion)
 
                     # Print predictiond and targets for reference
