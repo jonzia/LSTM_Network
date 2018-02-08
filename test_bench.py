@@ -138,11 +138,11 @@ with tf.name_scope("Reformat_Logits"):
 # Calculate Loss
 # ----------------------------------------------------
 # Calculating sigmoid cross entropy of labels and logits
-loss = tf.nn.sigmoid_cross_entropy_with_logits(labels=targets, logits=logits)
+loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=targets, logits=logits)
 loss = tf.reduce_mean(loss)
 
 # Obtain predictions from logits
-predictions = tf.sigmoid(logits)
+predictions = tf.nn.softmax(logits)
 
 # Obtain histogram data
 tf.summary.histogram('Predictions', predictions)
