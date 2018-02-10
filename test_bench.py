@@ -1,7 +1,7 @@
 # ----------------------------------------------------
-# LSTM Network Test Bench for LSTM_Network v1.2.4
+# LSTM Network Test Bench for LSTM_Network v1.2.5
 # Created by: Jonathan Zia
-# Last Modified: Thursdsay, Feb 8, 2018
+# Last Modified: Friday, Feb 9, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
