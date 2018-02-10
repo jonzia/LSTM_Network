@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.2.5
+# LSTM Network Implementation using Tensorflow 1.3.1
 # Created by: Jonathan Zia
 # Last Modified: Friday, Feb 9, 2018
 # Georgia Institute of Technology
@@ -265,6 +265,7 @@ with tf.Session() as sess:
 
 					# Report percent completion
 					p_completion = 100*step/NUM_TRAINING
+					# p_completion = 100*step/file_length
 					print("Percent completion: %.3f%%\n" % p_completion)
 
 					# Print predictiond and targets for reference

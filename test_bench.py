@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# LSTM Network Test Bench for LSTM_Network v1.2.5
+# LSTM Network Test Bench for LSTM_Network v1.3.1
 # Created by: Jonathan Zia
 # Last Modified: Friday, Feb 9, 2018
 # Georgia Institute of Technology
