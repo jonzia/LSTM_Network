@@ -80,7 +80,7 @@ def extract_data_balanced(filename, batch_size, num_steps, input_features, outpu
 	classes = np.array([[1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])
 	for i in range(batch_size):
 		# Randomly select one of the three classes for the sample in this batch
-		temp_class = classes[rd.randint(0, batch_size-1),:]
+		temp_class = classes[rd.randint(0, output_classes-1),:]
 		# Repeat until proper label is found
 		proper_label = False
 		while proper_label == False:
@@ -220,8 +220,8 @@ with tf.Session() as sess:
 	# Training the network
 	# Set number of trials to NUM_TRAINING
 	for step in range(0,NUM_TRAINING): # Balanced minibatches
-	# Obtain start time
-	start_time = time.time()
+		# Obtain start time
+		start_time = time.time()
 
 	# for step in range(0,file_length,WINDOW_INT_t): # Rolling window
 		try:	# While there is no out-of-bounds exception...
@@ -284,12 +284,12 @@ with tf.Session() as sess:
 			summ = sess.run(merged)
 			writer.add_summary(summ,step)
 
-	# Print time remaining
-	elapsed_time = time.time() - start_time
-	sec_remaining = round(elapsed_time*(NUM_TRAINING-step)) # Balanced minibatches
-	# sec_remaining = round(elapsed_time*(file_length-step)) # Sliding window
-	min_remaining = sec_remaining/60
-	print("\nTime Remaining: " % min_remaining)
+		# Print time remaining
+		elapsed_time = time.time() - start_time
+		sec_remaining = elapsed_time*(NUM_TRAINING-step) # Balanced minibatches
+		# sec_remaining = elapsed_time*(file_length-step) # Sliding window
+		min_remaining = round(sec_remaining/60)
+		print("\nTime Remaining: %d minutes" % min_remaining)
 
 	# Close the writer
 	writer.close()
