@@ -8,7 +8,7 @@ This program is an LSTM network written in Python for Tensorflow. The architectu
 
 Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. *FeatureExtraction.m* contains code designed for pre-processing the input data (including low-pass filtering, RMS, and Fourier analysis), however the data processing section may be adapted for any purpose. *NetworkAnalysis.m*, contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification and classifying outputs via Matlab's clasificationLearner, though it may also be adapted for any purpose.
 
-![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph122.PNG)
+![Tensorboard Graph](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/Graph122.PNG)
 
 ## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
@@ -62,7 +62,7 @@ with tf.name_scope("Output_Data"):	# Output data filenames (.txt)
 ```
 6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom in the data analysis section. Data may be fed into Matlab's classificationLearner to update the classification rule from the simple `round(predictions)` example provided.
 
-![Example NetworkAnalysis.m Output](https://github.com/jonzia/LSTM_Network/blob/master/Media/ExamplePredictionAnalysis.png)
+![Example NetworkAnalysis.m Output](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/ExamplePredictionAnalysis.png)
 
 ### Update Log
 _v1.3.1_: Introduced balanced minibatch input pipeline. Bug fixes and improvements.
