@@ -65,7 +65,7 @@ if LPF
     % Filtering data columns
     for file = 1:num_files(2) % For each file...
         % Filter columns in each file
-        data{file}.data(:,1+timestamp:feature_num+timestamp) = filter(coeff,1,data{file}.data(:,1+timestamp:feature_num+timestamp),[],1);
+        data{file}(:,1+timestamp:feature_num+timestamp) = filter(coeff,1,data{file}(:,1+timestamp:feature_num+timestamp),[],1);
     end
 end
 
@@ -80,18 +80,18 @@ if RMS
     for file = 1:num_files(2)
 
         % Obtain number of samples in file
-        num_elem = size(data{file}.data);
+        num_elem = size(data{file});
         % Initialize placeholders
         root_mean_square = zeros(num_elem(1)-window_size,num_elem(2));
 
         % For each sample, obtain FFT columnwise
         for sample = 1:num_elem(1)-window_size
             % Obtain the RMS over bin_size samples
-            root_mean_square(sample,1+timestamp:feature_num+timestamp) = rms(data{file}.data(sample:sample+window_size,1+timestamp:feature_num+1),1);
+            root_mean_square(sample,1+timestamp:feature_num+timestamp) = rms(data{file}(sample:sample+window_size,1+timestamp:feature_num+1),1);
             % Add timestamps to root_mean_square
-            root_mean_square(sample,1) = data{file}.data(sample+window_size,1);
+            root_mean_square(sample,1) = data{file}(sample+window_size,1);
             % Add labels to root_mean_square
-            root_mean_square(sample,end-class_num+1:end) = data{file}.data(sample+window_size,end-class_num+1:end);
+            root_mean_square(sample,end-class_num+1:end) = data{file}(sample+window_size,end-class_num+1:end);
         end
         % Update data file for exporting
         data_rms{file} = root_mean_square;
@@ -110,7 +110,7 @@ if FA
     for file = 1:num_files(2)
 
         % Obtain number of samples in file
-        num_elem = size(data{file}.data);
+        num_elem = size(data{file});
         % Initialize placeholders
         fourier = cell(num_elem(1)-window_size,1);
         fourier_av = zeros(num_elem(1)-window_size,freq_bins+class_num+1);
@@ -118,17 +118,17 @@ if FA
         % For each sample, obtain FFT columnwise
         for sample = 1:num_elem(1)-window_size
             % Obtain the FFT over bin_size samples
-            raw_freq = fft(data{file}.data(sample:sample+window_size,1+timestamp:feature_num+timestamp),[],1);
+            raw_freq = fft(data{file}(sample:sample+window_size,1+timestamp:feature_num+timestamp),[],1);
             raw_freq = abs(raw_freq/window_size); % Convert raw_freq to scalar
             one_freq = raw_freq(1:(window_size/2)+1,:); % Obtain one-sided FFT
             one_freq = 2*one_freq(2:end-1,:); % Scale one-sied FFT by 2
             fourier{sample} = one_freq;
             % Adding timestamp to fourier_av
             if timestamp == 1
-                fourier_av(sample,1) = data{file}.data(sample+window_size,1);
+                fourier_av(sample,1) = data{file}(sample+window_size,1);
             end
             % Adding label to fourier_av
-            fourier_av(sample,end-2:end) = data{file}.data(sample+window_size,end-class_num+1:end);
+            fourier_av(sample,end-class_num+1:end) = data{file}(sample+window_size,end-class_num+1:end);
             % Adding frequency bin average to fourier_av
             % Calculate points per bin
             points_bin = floor((window_size/2-1)/freq_bins);
