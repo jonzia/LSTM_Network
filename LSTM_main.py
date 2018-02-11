@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # LSTM Network Implementation using Tensorflow 1.3.1
 # Created by: Jonathan Zia
-# Last Modified: Friday, Feb 9, 2018
+# Last Modified: Sunday, Feb 11, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -220,6 +220,9 @@ with tf.Session() as sess:
 	# Training the network
 	# Set number of trials to NUM_TRAINING
 	for step in range(0,NUM_TRAINING): # Balanced minibatches
+	# Obtain start time
+	start_time = time.time()
+
 	# for step in range(0,file_length,WINDOW_INT_t): # Rolling window
 		try:	# While there is no out-of-bounds exception...
 
@@ -280,6 +283,13 @@ with tf.Session() as sess:
 			# Writing summaries to Tensorboard at each training step
 			summ = sess.run(merged)
 			writer.add_summary(summ,step)
+
+	# Print time remaining
+	elapsed_time = time.time() - start_time
+	sec_remaining = round(elapsed_time*(NUM_TRAINING-step)) # Balanced minibatches
+	# sec_remaining = round(elapsed_time*(file_length-step)) # Sliding window
+	min_remaining = sec_remaining/60
+	print("\nTime Remaining: " % min_remaining)
 
 	# Close the writer
 	writer.close()
