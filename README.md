@@ -6,7 +6,7 @@ LSTM network implemented in Tensorflow designed for time-series prediction and c
 ## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline can be either rolling-window with offset batches or balanced minibatches and weights updated via truncated BPTT. The error is calculated via `tf.nn.softmax_cross_entropy_with_logits_v2` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in two or more categories, either one-hot or binary-encoded.
 
-Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. This package includes the UC Irvine Freezing of Gait data repository (converted to .csv file format) for which this program was designed. *FeatureExtraction.m* contains code designed for pre-processing the provided FoG data, however the data processing section may be adapted for any purpose. *NetworkAnalysis.m*, contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification and classifying outputs via Matlab's clasificationLearner, though it may also be adapted for any purpose.
+Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. *FeatureExtraction.m* contains code designed for pre-processing the input data, however the data processing section may be adapted for any purpose. *NetworkAnalysis.m*, contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification and classifying outputs via Matlab's clasificationLearner, though it may also be adapted for any purpose.
 
 ![Tensorboard Graph](https://github.com/jonzia/LSTM_Network/blob/master/Media/Graph122.PNG)
 
@@ -36,7 +36,7 @@ LOAD_FILE = False 	# Load initial LSTM model from saved checkpoint?
 with tf.name_scope("Validation_Data"):
 	vDataset = "file_path.csv"
  ```
-  c. (Optional) Pre-process data with *FeatureExtraction.m*. This program is designed to pre-process data from the attached *UC Irvine Freezing of Gait Dataset*, however, custom pre-processing code may be added in the data processing section.
+  c. (Optional) Pre-process data with *FeatureExtraction.m*. Custom pre-processing code may be added in the data processing section.
   
   d. Specify file directory for saving network variables, summaries, and graph.
  ```python
