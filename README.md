@@ -72,7 +72,7 @@ _v1.2.1_ - _v1.2.4_: Improved exception handling and added ability to load parti
 _v1.1.1_ - _v1.2.0_: Updated mean-squared error loss approach to sigmoid cross-entropy. Added test bench program for running trained network on a validation dataset. Added feature extraction Matlab script for data pre-processing. Added ability to save network states and LSTM cell dropout wrappers. Added rolling-window input pipeline.
 
 ### Notes
-**(1)** To select rolling-window input pipeline, swap hashes on lines 227/228, 254/255, and 267/268:
+**(1)** To select rolling-window input pipeline, swap hashes on lines 227/228, 254/255, 267/268, and 283/284:
 ```python
 features, labels = extract_data_balanced(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, file_length) # Balanced minibatches
 # features, labels = extract_data_window(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step) # Rolling window
@@ -82,6 +82,9 @@ v_features, v_labels =  extract_data_balanced(vDataset, BATCH_SIZE, NUM_STEPS, I
 ...
 p_completion = 100*step/NUM_TRAINING
 # p_completion = 100*step/file_length
+...
+sec_remaining = round(elapsed_time*(NUM_TRAINING-step)) # Balanced minibatches
+# sec_remaining = round(elapsed_time*(file_length-step)) # Sliding window
 ```
 
 **(2)** To use the stock input pipeline, the training datafiles must be CSV files with columns in the following arrangement:
