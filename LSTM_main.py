@@ -284,12 +284,13 @@ with tf.Session() as sess:
 			summ = sess.run(merged)
 			writer.add_summary(summ,step)
 
-		# Print time remaining
-		elapsed_time = time.time() - start_time
-		sec_remaining = elapsed_time*(NUM_TRAINING-step) # Balanced minibatches
-		# sec_remaining = elapsed_time*(file_length-step) # Sliding window
-		min_remaining = round(sec_remaining/60)
-		print("\nTime Remaining: %d minutes" % min_remaining)
+		if step/11 == 0:
+			# Print time remaining
+			elapsed_time = time.time() - start_time
+			sec_remaining = elapsed_time*(NUM_TRAINING-step) # Balanced minibatches
+			# sec_remaining = elapsed_time*(file_length-step) # Sliding window
+			min_remaining = round(sec_remaining/60)
+			print("\nTime Remaining: %d minutes" % min_remaining)
 
 	# Close the writer
 	writer.close()
