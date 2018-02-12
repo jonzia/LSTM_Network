@@ -1,46 +1,59 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.3.1
+# LSTM Network Implementation using Tensorflow 1.3.2
 # Created by: Jonathan Zia
-# Last Modified: Sunday, Feb 11, 2018
+# Last Modified: Monday, Feb 12, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
 import pandas as pd
 import numpy as np
 import random as rd
+import time
 import math
 import csv
+import os
 
 # ----------------------------------------------------
 # User-Defined Constants
 # ----------------------------------------------------
-BATCH_SIZE = 3		# Batch size
-NUM_STEPS = 100		# Max steps for BPTT
-NUM_LSTM_LAYERS = 1	# Number of LSTM layers
-NUM_LSTM_HIDDEN = 5	# Number of LSTM hidden units
-OUTPUT_CLASSES = 3	# Number of classes / FCL output units
-INPUT_FEATURES = 9	# Number of input features
-I_KEEP_PROB = 1.0	# Input keep probability / LSTM cell
-O_KEEP_PROB = 1.0	# Output keep probability / LSTM cell
-NUM_TRAINING = 10000	# Number of training batches (balanced minibatches)
+# Architecture
+BATCH_SIZE = 3			# Batch size
+NUM_STEPS = 100			# Max steps for BPTT
+NUM_LSTM_LAYERS = 1		# Number of LSTM layers
+NUM_LSTM_HIDDEN = 5		# Number of LSTM hidden units
+OUTPUT_CLASSES = 3		# Number of classes / FCL output units
+INPUT_FEATURES = 9		# Number of input features
+
+# Training
+I_KEEP_PROB = 1.0		# Input keep probability / LSTM cell
+O_KEEP_PROB = 1.0		# Output keep probability / LSTM cell
+NUM_TRAINING = 1000		# Number of training batches (balanced minibatches)
 NUM_VALIDATION = 100	# Number of validation batches (balanced minibatches)
-WINDOW_INT_t = 1	# Rolling window step interval for training (rolling window)
-WINDOW_INT_v = 1000	# Rolling window step interval for validation (rolling window)
+WINDOW_INT_t = 1		# Rolling window step interval for training (rolling window)
+WINDOW_INT_v = 1000		# Rolling window step interval for validation (rolling window)
+
+# Load File
 LOAD_FILE = False 	# Load initial LSTM model from saved checkpoint?
+
+# Input Pipeline
+# Enter "True" for balanced mini-batching and "False" for rolling-window
+MINI_BATCH = True
 
 
 # ----------------------------------------------------
 # Input data files
 # ----------------------------------------------------
 # Specify filenames
+# Root directory:
+dir_name = "/Users/username/Documents"
 with tf.name_scope("Training_Data"):	# Training dataset
-	tDataset = ""
+	tDataset = os.path.join(dir_name, "dataset/filename1.csv")
 with tf.name_scope("Validation_Data"):	# Validation dataset
-	vDataset = ""
+	vDataset = os.path.join(dir_name, "dataset/filename2.csv")
 with tf.name_scope("Model_Data"):		# Model save path
-	save_path = "/checkpoints/model"
+	save_path = os.path.join(dir_name, "checkpoints/model")
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
-	filewriter_path = "/output"
+	filewriter_path = os.path.join(dir_name, "output")
 
 # Obtain length of testing and validation datasets
 file_length = len(pd.read_csv(tDataset))
@@ -77,7 +90,7 @@ def extract_data_balanced(filename, batch_size, num_steps, input_features, outpu
 	# If the label belongs to the proper class, add data to batch and increment i
 	# Continue for all classes
 	# Define classes:
-	classes = np.array([[1., 0., 0.],[0., 1., 0.],[0., 0., 1.]])
+	classes = np.identity(output_classes) # Returns classes as one-hot rows
 	for i in range(batch_size):
 		# Randomly select one of the three classes for the sample in this batch
 		temp_class = classes[rd.randint(0, output_classes-1),:]
@@ -218,8 +231,21 @@ with tf.Session() as sess:
 		sess.run(init)
 
 	# Training the network
+
+	# Determine whether to use sliding-window or minibatching
+	if MINI_BATCH:
+		step_range = NUM_TRAINING 		# Set step range for training
+		v_step_range = NUM_VALIDATION	# Set step range for validation
+		window_int_t = 1	# Select window interval for training
+		window_int_v = 1	# Select window interval for validation
+	else: # If sliding window...
+		step_range = file_length 		# Set step range for training
+		v_step_range = v_file_length 	# Set step range for validation
+		window_int_t = WINDOW_INT_t 	# Select window interval for training
+		window_int_v = WINDOW_INT_v 	# Select window interval for validation
+
 	# Set number of trials to NUM_TRAINING
-	for step in range(0,NUM_TRAINING): # Balanced minibatches
+	for step in range(0,step_range,window_int_t): # Balanced minibatches
 		# Obtain start time
 		start_time = time.time()
 
@@ -227,8 +253,11 @@ with tf.Session() as sess:
 		try:	# While there is no out-of-bounds exception...
 
 			# Obtaining batch of features and labels from TRAINING dataset(s)
-			features, labels = extract_data_balanced(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, file_length) # Balanced minibatches
-			# features, labels = extract_data_window(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step) # Rolling window
+			if MINI_BATCH: # Balanced minibatches
+				features, labels = extract_data_balanced(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, file_length)
+			else: # Rolling window
+				features, labels = extract_data_window(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step)
+
 		except:
 			break
 
@@ -244,18 +273,21 @@ with tf.Session() as sess:
 			# Evaluate network and print data in terminal periodically
 			with tf.name_scope("Validation"):
 				# Conditional statement for validation and printing
-				if step % 5 == 0:
+				if step % 100 == 0:
 					print("\nMinibatch train loss at step", step, ":", loss_)
 
 					# Evaluate network
 					test_loss = []
-					for step_num in range(0,NUM_VALIDATION): # Balanced minibatches
-					# for step_num in range(0,v_file_length,WINDOW_INT_v): # Rolling window
+					for step_num in range(0,v_step_range,window_int_v):
+
 						try:	# While there is no out-of-bounds exception...
 
 							# Obtaining batch of features and labels from VALIDATION dataset(s)
-							v_features, v_labels =  extract_data_balanced(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, v_file_length) # Balanced minibatches
-							# v_features, v_labels =  extract_data_window(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step_num) # Rolling window
+							if MINI_BATCH:  # Balanced minibatches
+								v_features, v_labels =  extract_data_balanced(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, v_file_length)
+							else: # Rolling window
+								v_features, v_labels =  extract_data_window(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step_num)
+
 						except:
 							break
 						
@@ -267,8 +299,10 @@ with tf.Session() as sess:
 					print("Test loss: %.3f" % np.mean(test_loss))
 
 					# Report percent completion
-					p_completion = 100*step/NUM_TRAINING
-					# p_completion = 100*step/file_length
+					if MINI_BATCH: # Balanced minibatches
+						p_completion = 100*step/NUM_TRAINING
+					else: # Rolling window
+						p_completion = 100*step/file_length
 					print("Percent completion: %.3f%%\n" % p_completion)
 
 					# Print predictiond and targets for reference
@@ -284,11 +318,14 @@ with tf.Session() as sess:
 			summ = sess.run(merged)
 			writer.add_summary(summ,step)
 
-		if step/11 == 0:
+		# Conditional statement for calculating time remaining
+		if step % 10 == 0:
 			# Print time remaining
 			elapsed_time = time.time() - start_time
-			sec_remaining = elapsed_time*(NUM_TRAINING-step) # Balanced minibatches
-			# sec_remaining = elapsed_time*(file_length-step) # Sliding window
+			if MINI_BATCH: # Balanced minibatches
+				sec_remaining = elapsed_time*(NUM_TRAINING-step)
+			else: # Sliding window
+				sec_remaining = round(elapsed_time*(file_length-step))
 			min_remaining = round(sec_remaining/60)
 			print("\nTime Remaining: %d minutes" % min_remaining)
 

@@ -1,7 +1,7 @@
 # ----------------------------------------------------
-# LSTM Network Test Bench for LSTM_Network v1.3.1
+# LSTM Network Test Bench for LSTM_Network v1.3.2
 # Created by: Jonathan Zia
-# Last Modified: Friday, Feb 9, 2018
+# Last Modified: Monday, Feb 12, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -27,16 +27,18 @@ WINDOW_INT = 10     # Rolling window step interval
 # Input data files
 # ----------------------------------------------------
 # Specify filenames
+# Root directory:
+dir_name = "/Users/username/Documents"
 with tf.name_scope("Training_Data"):    # Testing dataset
-    Dataset = ""
+    Dataset = os.path.join(dir_name, "/dataset/filename.csv")
 with tf.name_scope("Model_Data"):       # Model load path
-    load_path = "/checkpoints/model"
+    load_path = os.path.join(dir_name, "checkpoints/model")
 with tf.name_scope("Filewriter_Data"):  # Filewriter save path
-    filewriter_path = "/test_bench"
+    filewriter_path = os.path.join(dir_name, "output")
 with tf.name_scope("Output_Data"):      # Output data filenames (.txt)
     # These .txt files will contain prediction and target data respectively for Matlab analysis
-    prediction_file = "/predictions.txt"
-    target_file = "/targets.txt"
+    prediction_file = os.path.join(dir_name, "predictions.txt")
+    target_file = os.path.join(dir_name, "targets.txt")
 
 # Obtain length of testing and validation datasets
 file_length = len(pd.read_csv(Dataset))
