@@ -1,29 +1,29 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.3.2
+# LSTM Network Implementation using Tensorflow 1.3.3
 # Created by: Jonathan Zia
-# Last Modified: Monday, Feb 12, 2018
+# Last Modified: Wednesday, Feb 14, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
+import network as net
 import pandas as pd
-import numpy as np
 import random as rd
+import numpy as np
 import time
 import math
 import csv
 import os
 
+
+# ----------------------------------------------------
+# Instantiate Network Class
+# ----------------------------------------------------
+lstm = net.Network()
+
+
 # ----------------------------------------------------
 # User-Defined Constants
 # ----------------------------------------------------
-# Architecture
-BATCH_SIZE = 3			# Batch size
-NUM_STEPS = 100			# Max steps for BPTT
-NUM_LSTM_LAYERS = 1		# Number of LSTM layers
-NUM_LSTM_HIDDEN = 5		# Number of LSTM hidden units
-OUTPUT_CLASSES = 3		# Number of classes / FCL output units
-INPUT_FEATURES = 9		# Number of input features
-
 # Training
 I_KEEP_PROB = 1.0		# Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0		# Output keep probability / LSTM cell
@@ -45,13 +45,14 @@ MINI_BATCH = True
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = "/Users/username/Documents"
+dir_name = "/Directory"
 with tf.name_scope("Training_Data"):	# Training dataset
-	tDataset = os.path.join(dir_name, "dataset/filename1.csv")
+	tDataset = os.path.join(dir_name, "data/filename.csv")
 with tf.name_scope("Validation_Data"):	# Validation dataset
-	vDataset = os.path.join(dir_name, "dataset/filename2.csv")
+	vDataset = os.path.join(dir_name, "data/filename")
 with tf.name_scope("Model_Data"):		# Model save path
-	save_path = os.path.join(dir_name, "checkpoints/model")
+	save_path = os.path.join(dir_name, "checkpoints/model")		# Save model at each step
+	save_path_op = os.path.join(dir_name, "checkpoints/model_op")	# Save optimal model
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = os.path.join(dir_name, "output")
 
@@ -152,8 +153,8 @@ def extract_data_window(filename, batch_size, num_steps, input_features, output_
 # Create placeholders for inputs and target values
 # Input dimensions: BATCH_SIZE x NUM_STEPS x INPUT_FEATURES
 # Target dimensions: BATCH_SIZE x OUTPUT_CLASSES
-inputs = tf.placeholder(tf.float32, [BATCH_SIZE, NUM_STEPS, INPUT_FEATURES], name="Input_Placeholder")
-targets = tf.placeholder(tf.float32, [BATCH_SIZE, OUTPUT_CLASSES], name="Target_Placeholder")
+inputs = tf.placeholder(tf.float32, [lstm.batch_size, lstm.num_steps, lstm.input_features], name="Input_Placeholder")
+targets = tf.placeholder(tf.float32, [lstm.batch_size, lstm.output_classes], name="Target_Placeholder")
 
 
 # ----------------------------------------------------
@@ -162,9 +163,9 @@ targets = tf.placeholder(tf.float32, [BATCH_SIZE, OUTPUT_CLASSES], name="Target_
 # Build LSTM cells
 with tf.name_scope("LSTM_Network"):
 	cells = []
-	for _ in range(NUM_LSTM_LAYERS):
+	for _ in range(lstm.num_lstm_layers):
 		# Creating basic LSTM cell
-		cell = tf.contrib.rnn.BasicLSTMCell(NUM_LSTM_HIDDEN)
+		cell = tf.contrib.rnn.BasicLSTMCell(lstm.num_lstm_hidden)
 		# Adding dropout wrapper to cell
 		cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=I_KEEP_PROB, output_keep_prob=O_KEEP_PROB)
 		# Stacking LSTM cells
@@ -173,31 +174,31 @@ with tf.name_scope("LSTM_Network"):
 
 # Initialize weights and biases for fully-connected layer.
 with tf.name_scope("FCN_Variables"):
-	W = init_values([NUM_LSTM_HIDDEN, OUTPUT_CLASSES])
+	W = init_values([lstm.num_lstm_hidden, lstm.output_classes])
 	tf.summary.histogram('Weights',W)
-	b = init_values([OUTPUT_CLASSES])
+	b = init_values([lstm.output_classes])
 	tf.summary.histogram('Biases',b)
 
 # Add LSTM cells to dynamic_rnn and implement truncated BPTT
-initial_state = state = stacked_lstm.zero_state(BATCH_SIZE, tf.float32)
+initial_state = state = stacked_lstm.zero_state(lstm.batch_size, tf.float32)
 logits = []
 with tf.name_scope("Dynamic_RNN"):
-	for i in range(NUM_STEPS):
+	for i in range(lstm.num_steps):
 		# Obtain output at each step
 		output, state = tf.nn.dynamic_rnn(stacked_lstm, inputs[:,i:i+1,:], initial_state=state)
 # Obtain final output and convert to logit
 # Reshape output to remove extra dimension
-output = tf.reshape(output,[BATCH_SIZE,NUM_LSTM_HIDDEN])
+output = tf.reshape(output,[lstm.batch_size,lstm.num_lstm_hidden])
 with tf.name_scope("Append_Output"):
 	# Obtain logits by passing output
-	for j in range(BATCH_SIZE):
+	for j in range(lstm.batch_size):
 		logit = tf.matmul(output[j:j+1,:], W) + b
 		logits.append(logit)
 # Converting logits array to tensor and reshaping the array such that it has the arrangement:
 # [class1 class2 ...] batch = 1
 # [class1 class2 ...] batch = 2 ...
 with tf.name_scope("Reformat_Logits"):
-	logits = tf.reshape(tf.convert_to_tensor(logits), [BATCH_SIZE, OUTPUT_CLASSES])
+	logits = tf.reshape(tf.convert_to_tensor(logits), [lstm.batch_size, lstm.output_classes])
 
 
 # ----------------------------------------------------
@@ -244,19 +245,24 @@ with tf.Session() as sess:
 		window_int_t = WINDOW_INT_t 	# Select window interval for training
 		window_int_v = WINDOW_INT_v 	# Select window interval for validation
 
-	# Set number of trials to NUM_TRAINING
-	for step in range(0,step_range,window_int_t): # Balanced minibatches
-		# Obtain start time
-		start_time = time.time()
+	# Obtain start time
+	start_time = time.time()
+	# Initialize optimal loss
+	loss_op = 0
 
-	# for step in range(0,file_length,WINDOW_INT_t): # Rolling window
+	# Set number of trials to NUM_TRAINING
+	for step in range(0,step_range,window_int_t):
+
+		# Initialize optimal model saver to False
+		save_op = False
+
 		try:	# While there is no out-of-bounds exception...
 
 			# Obtaining batch of features and labels from TRAINING dataset(s)
 			if MINI_BATCH: # Balanced minibatches
-				features, labels = extract_data_balanced(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, file_length)
+				features, labels = extract_data_balanced(tDataset, lstm.batch_size, lstm.num_steps, lstm.input_features, lstm.output_classes, file_length)
 			else: # Rolling window
-				features, labels = extract_data_window(tDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step)
+				features, labels = extract_data_window(tDataset, lstm.batch_size, lstm.num_steps, lstm.input_features, lstm.output_classes, step)
 
 		except:
 			break
@@ -284,9 +290,9 @@ with tf.Session() as sess:
 
 							# Obtaining batch of features and labels from VALIDATION dataset(s)
 							if MINI_BATCH:  # Balanced minibatches
-								v_features, v_labels =  extract_data_balanced(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, v_file_length)
+								v_features, v_labels =  extract_data_balanced(vDataset, lstm.batch_size, lstm.num_steps, lstm.input_features, lstm.output_classes, v_file_length)
 							else: # Rolling window
-								v_features, v_labels =  extract_data_window(vDataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES, step_num)
+								v_features, v_labels =  extract_data_window(vDataset, lstm.batch_size, lstm.num_steps, lstm.input_features, lstm.output_classes, step_num)
 
 						except:
 							break
@@ -296,14 +302,15 @@ with tf.Session() as sess:
 						loss_test = sess.run(loss, feed_dict=data_test)
 						test_loss.append(loss_test)
 
+					# Print test loss
 					print("Test loss: %.3f" % np.mean(test_loss))
-
-					# Report percent completion
-					if MINI_BATCH: # Balanced minibatches
-						p_completion = 100*step/NUM_TRAINING
-					else: # Rolling window
-						p_completion = 100*step/file_length
-					print("Percent completion: %.3f%%\n" % p_completion)
+					# For the first step, set optimal loss to test loss
+					if step == 0:
+						loss_op = test_loss
+					# If test_loss < optimal loss, overwrite optimal loss
+					if test_loss < loss_op:
+						loss_op = test_loss
+						save_op = True 	# Save model as new optimal model
 
 					# Print predictiond and targets for reference
 					print("Predictions:")
@@ -313,19 +320,30 @@ with tf.Session() as sess:
 
 			# Save and overwrite the session at each training step
 			saver.save(sess, save_path)
+			# Save the model if loss over the test set is optimal
+			if save_op:
+				saver.save(sess,save_path_op)
 
 			# Writing summaries to Tensorboard at each training step
 			summ = sess.run(merged)
 			writer.add_summary(summ,step)
 
-		# Conditional statement for calculating time remaining
+		# Conditional statement for calculating time remaining and percent completion
 		if step % 10 == 0:
-			# Print time remaining
-			elapsed_time = time.time() - start_time
+
+			# Report percent completion
 			if MINI_BATCH: # Balanced minibatches
-				sec_remaining = elapsed_time*(NUM_TRAINING-step)
+				p_completion = 100*step/NUM_TRAINING
+			else: # Rolling window
+				p_completion = 100*step/file_length
+			print("\nPercent completion: %.3f%%" % p_completion)
+
+			# Print time remaining
+			avg_elapsed_time = (time.time() - start_time)/(step+1)
+			if MINI_BATCH: # Balanced minibatches
+				sec_remaining = avg_elapsed_time*(NUM_TRAINING-step)
 			else: # Sliding window
-				sec_remaining = round(elapsed_time*(file_length-step))
+				sec_remaining = round(avg_elapsed_time*(file_length-step)/window_int_t)
 			min_remaining = round(sec_remaining/60)
 			print("\nTime Remaining: %d minutes" % min_remaining)
 

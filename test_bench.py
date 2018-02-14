@@ -1,40 +1,45 @@
 # ----------------------------------------------------
-# LSTM Network Test Bench for LSTM_Network v1.3.2
+# LSTM Network Test Bench for LSTM_Network v1.3.3
 # Created by: Jonathan Zia
-# Last Modified: Monday, Feb 12, 2018
+# Last Modified: Wednesday, Feb 14, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
+import network as net
 import pandas as pd
 import numpy as np
 import math
 import csv
+import os
+
+
+# ----------------------------------------------------
+# Instantiate Network Class
+# ----------------------------------------------------
+lstm = net.Network()
+
 
 # ----------------------------------------------------
 # User-Defined Constants
 # ----------------------------------------------------
-BATCH_SIZE = 1      # Batch size
-NUM_STEPS = 100     # Max steps for BPTT
-NUM_LSTM_LAYERS = 1 # Number of LSTM layers
-NUM_LSTM_HIDDEN = 5 # Number of LSTM hidden units
-OUTPUT_CLASSES = 3  # Number of classes / FCL output units
-INPUT_FEATURES = 9  # Number of input features
+# Training
 I_KEEP_PROB = 1.0   # Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0   # Output keep probability / LSTM cell
 WINDOW_INT = 10     # Rolling window step interval
+
 
 # ----------------------------------------------------
 # Input data files
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = "/Users/username/Documents"
+dir_name = "/Directory"
 with tf.name_scope("Training_Data"):    # Testing dataset
-    Dataset = os.path.join(dir_name, "/dataset/filename.csv")
+    Dataset = os.path.join(dir_name, "data/filename.csv")
 with tf.name_scope("Model_Data"):       # Model load path
     load_path = os.path.join(dir_name, "checkpoints/model")
 with tf.name_scope("Filewriter_Data"):  # Filewriter save path
-    filewriter_path = os.path.join(dir_name, "output")
+    filewriter_path = os.path.join(dir_name, "test_bench")
 with tf.name_scope("Output_Data"):      # Output data filenames (.txt)
     # These .txt files will contain prediction and target data respectively for Matlab analysis
     prediction_file = os.path.join(dir_name, "predictions.txt")
@@ -92,8 +97,8 @@ def extract_data(filename, batch_size, num_steps, input_features, output_classes
 # Create placeholders for inputs and target values
 # Input dimensions: BATCH_SIZE x NUM_STEPS x INPUT_FEATURES
 # Target dimensions: BATCH_SIZE x OUTPUT_CLASSES
-inputs = tf.placeholder(tf.float32, [BATCH_SIZE, NUM_STEPS, INPUT_FEATURES], name="Input_Placeholder")
-targets = tf.placeholder(tf.float32, [BATCH_SIZE, OUTPUT_CLASSES], name="Target_Placeholder")
+inputs = tf.placeholder(tf.float32, [lstm.batch_size, lstm.num_steps, lstm.input_features], name="Input_Placeholder")
+targets = tf.placeholder(tf.float32, [lstm.batch_size, lstm.output_classes], name="Target_Placeholder")
 
 
 # ----------------------------------------------------
@@ -102,9 +107,9 @@ targets = tf.placeholder(tf.float32, [BATCH_SIZE, OUTPUT_CLASSES], name="Target_
 # Build LSTM cells
 with tf.name_scope("LSTM_Network"):
     cells = []
-    for _ in range(NUM_LSTM_LAYERS):
+    for _ in range(lstm.num_lstm_layers):
         # Creating basic LSTM cell
-        cell = tf.contrib.rnn.BasicLSTMCell(NUM_LSTM_HIDDEN)
+        cell = tf.contrib.rnn.BasicLSTMCell(lstm.num_lstm_hidden)
         # Adding dropout wrapper to cell
         cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=I_KEEP_PROB, output_keep_prob=O_KEEP_PROB)
         # Stacking LSTM cells
@@ -113,38 +118,34 @@ with tf.name_scope("LSTM_Network"):
 
 # Initialize weights and biases for fully-connected layer.
 with tf.name_scope("FCN_Variables"):
-    W = init_values([NUM_LSTM_HIDDEN, OUTPUT_CLASSES])
-    b = init_values([OUTPUT_CLASSES])
+    W = init_values([lstm.num_lstm_hidden, lstm.output_classes])
+    b = init_values([lstm.output_classes])
 
 # Add LSTM cells to dynamic_rnn and implement truncated BPTT
-initial_state = state = stacked_lstm.zero_state(BATCH_SIZE, tf.float32)
+initial_state = state = stacked_lstm.zero_state(lstm.batch_size, tf.float32)
 logits = []
 with tf.name_scope("Dynamic_RNN"):
-    for i in range(NUM_STEPS):
+    for i in range(lstm.num_steps):
         # Obtain output at each step
         output, state = tf.nn.dynamic_rnn(stacked_lstm, inputs[:,i:i+1,:], initial_state=state)
 # Obtain final output and convert to logit
 # Reshape output to remove extra dimension
-output = tf.reshape(output,[BATCH_SIZE,NUM_LSTM_HIDDEN])
+output = tf.reshape(output,[lstm.batch_size,lstm.num_lstm_hidden])
 with tf.name_scope("Append_Output"):
     # Obtain logits by passing output
-    for j in range(BATCH_SIZE):
+    for j in range(lstm.batch_size):
         logit = tf.matmul(output[j:j+1,:], W) + b
         logits.append(logit)
 # Converting logits array to tensor and reshaping the array such that it has the arrangement:
 # [class1 class2 ...] batch = 1
 # [class1 class2 ...] batch = 2 ...
 with tf.name_scope("Reformat_Logits"):
-    logits = tf.reshape(tf.convert_to_tensor(logits), [BATCH_SIZE, OUTPUT_CLASSES])
+    logits = tf.reshape(tf.convert_to_tensor(logits), [lstm.batch_size, lstm.output_classes])
 
 # ----------------------------------------------------
 # Calculate Loss
 # ----------------------------------------------------
-<<<<<<< HEAD
 # Calculating softmax cross entropy of labels and logits
-=======
-# Calculating sigmoid cross entropy of labels and logits
->>>>>>> origin/master
 loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=targets, logits=logits)
 loss = tf.reduce_mean(loss)
 
@@ -173,7 +174,7 @@ with tf.Session() as sess:
 
         try: # While there is no out-of-bounds exception
             # Obtaining batch of features and labels from TRAINING dataset(s)
-            features, labels = extract_data(Dataset, BATCH_SIZE, NUM_STEPS, INPUT_FEATURES, OUTPUT_CLASSES,step)
+            features, labels = extract_data(Dataset, lstm.batch_size, lstm.num_steps, lstm.input_features, lstm.output_classes,step)
         except:
             break
 
@@ -184,7 +185,7 @@ with tf.Session() as sess:
 
         # Report parameters
         if True:    # Conditional statement for filtering outputs
-            p_completion = math.floor(100*step/file_length)
+            p_completion = math.floor(100*step*lstm.batch_size/file_length)
             print("\nLoss: %.3f, Percent Completion: " % loss_, p_completion)
             print("\nPredictions:")
             print(pred)
