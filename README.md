@@ -1,4 +1,4 @@
-# LSTM Network v1.3.2
+# LSTM Network v1.3.3
 
 ## Overview
 LSTM network implemented in Tensorflow designed for time-series prediction and classification. Check out the [demo](https://youtu.be/DSzegLte0Iw) and [design blog](https://www.jonzia.me/projects/lstm-tensorflow)!
@@ -10,24 +10,35 @@ Included with the LSTM program are Matlab and Python programs for processing .cs
 
 ![Tensorboard Graph](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/Graph122.PNG)
 
+## Features
+- Fully-customizable network architecture and training setup.
+- Input data processing and trained network validation and analysis code included.
+- Ability to save and load checkpoints to pause and continue training.
+- Balanced minibatching and rolling-window input pipelines included.
+- Ability to visualize training with Tensorboard and write data to output files for analysis.
+- Modular, clean, and commented implementation -- highly adaptable for any purpose!
+- Plug and Play: It just works.
+
 ## To Run
 1. Install [Tensorflow](https://www.tensorflow.org/install/).
 2. Download repository files.
-  a. In *LSTM_main.py*, edit network characteristics in "User-Defined Parameters" field.
+  a. In *network.py*, set the network architecture used in the training and test bench programs.
   ```python
 # Architecture
-BATCH_SIZE = 3			# Batch size
-NUM_STEPS = 100			# Max steps for BPTT
-NUM_LSTM_LAYERS = 1		# Number of LSTM layers
-NUM_LSTM_HIDDEN = 5		# Number of LSTM hidden units
-OUTPUT_CLASSES = 3		# Number of classes / FCL output units
-INPUT_FEATURES = 9		# Number of input features
-
+self.batch_size = 9		# Batch size
+self.num_steps = 100		# Max steps for BPTT
+self.num_lstm_layers = 1	# Number of LSTM layers
+self.num_lstm_hidden = 10	# Number of LSTM hidden units
+self.output_classes = 3		# Number of classes / FCL output units
+self.input_features = 9		# Number of input features
+  ```
+  b. In *LSTM_Main.py*, set training parameters.
+  ```python
 # Training
 I_KEEP_PROB = 1.0		# Input keep probability / LSTM cell
 O_KEEP_PROB = 1.0		# Output keep probability / LSTM cell
 NUM_TRAINING = 1000		# Number of training batches (balanced minibatches)
-NUM_VALIDATION = 100	# Number of validation batches (balanced minibatches)
+NUM_VALIDATION = 100		# Number of validation batches (balanced minibatches)
 WINDOW_INT_t = 1		# Rolling window step interval for training (rolling window)
 WINDOW_INT_v = 1000		# Rolling window step interval for validation (rolling window)
 
@@ -37,21 +48,24 @@ LOAD_FILE = False 	# Load initial LSTM model from saved checkpoint?
 # Input Pipeline
 # Enter "True" for balanced mini-batching and "False" for rolling-window
 MINI_BATCH = True
-```
-  b. Specify files to be used for network training and validation. **(1)**
+  ```
+  c. Specify files to be used for network training and validation. **(1)**
  ```python
-dir_name = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow"
+# Specify filenames
+# Root directory:
+dir_name = "/Directory"
 with tf.name_scope("Training_Data"):	# Training dataset
-	tDataset = os.path.join(dir_name, "UC Irvine Dataset/dataset/S01R01_lpf.csv")
+	tDataset = os.path.join(dir_name, "data/filename.csv")
 with tf.name_scope("Validation_Data"):	# Validation dataset
-	vDataset = os.path.join(dir_name, "UC Irvine Dataset/dataset/S01R02_lpf.csv")
+	vDataset = os.path.join(dir_name, "data/filename")
  ```
-  c. (Optional) Pre-process data with *FeatureExtraction.m*. Custom pre-processing code may be added in the data processing section.
+  d. (Optional) Pre-process data with *FeatureExtraction.m*. Custom pre-processing code may be added in the data processing section.
   
-  d. Specify file directory for saving network variables, summaries, and graph.
+  e. Specify file directory for saving network variables, summaries, and graph.
  ```python
 with tf.name_scope("Model_Data"):		# Model save path
-	save_path = os.path.join(dir_name, "checkpoints/model")
+	save_path = os.path.join(dir_name, "checkpoints/model")		# Save model at each step
+	save_path_op = os.path.join(dir_name, "checkpoints/model_op")	# Save optimal model
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = os.path.join(dir_name, "output")
  ```
@@ -76,9 +90,9 @@ with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
 ![Example NetworkAnalysis.m Output](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/ExamplePredictionAnalysis.png)
 
 ### Update Log
-_v1.3.2_: Improved user interface and ability to handle a variable number of output classes as one-hot vectors.
+_v1.3.3_: Added ability to save optimal model state as checkpoint. Included *network.py* so that network architecture is preserved across all python files. Bug fixes and improvements.
 
-_v1.3.1_: Introduced balanced minibatch input pipeline. Bug fixes and improvements.
+_v1.3.1_ - _v1.3.2_: Improved user interface and ability to handle a variable number of output classes as one-hot vectors. Introduced balanced minibatch input pipeline. Bug fixes and improvements.
 
 _v1.2.1_ - _v1.2.4_: Improved exception handling and added ability to load partially-trained networks to resume training. Added classification learning capability for trained network outputs and ability to conditionally call optimizer when running the session to mitigate class imbalance. Added capability for >2 target categories (vs. binary classification) and rolling window step interval for decreasing training time overfitting likelihood. Updated test bench to output predictions and targets to .txt file for Matlab analysis. Added Matlab program for analysis of the trained LSTM network.
 
