@@ -41,10 +41,8 @@ NUM_TRAINING = 1000		# Number of training batches (balanced minibatches)
 NUM_VALIDATION = 100		# Number of validation batches (balanced minibatches)
 WINDOW_INT_t = 1		# Rolling window step interval for training (rolling window)
 WINDOW_INT_v = 1000		# Rolling window step interval for validation (rolling window)
-
 # Load File
 LOAD_FILE = False 	# Load initial LSTM model from saved checkpoint?
-
 # Input Pipeline
 # Enter "True" for balanced mini-batching and "False" for rolling-window
 MINI_BATCH = True
