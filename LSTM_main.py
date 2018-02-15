@@ -306,10 +306,10 @@ with tf.Session() as sess:
 					print("Test loss: %.3f" % np.mean(test_loss))
 					# For the first step, set optimal loss to test loss
 					if step == 0:
-						loss_op = test_loss
+						loss_op = np.mean(test_loss)
 					# If test_loss < optimal loss, overwrite optimal loss
-					if test_loss < loss_op:
-						loss_op = test_loss
+					if np.mean(test_loss) < loss_op:
+						loss_op = np.mean(test_loss)
 						save_op = True 	# Save model as new optimal model
 
 					# Print predictiond and targets for reference
