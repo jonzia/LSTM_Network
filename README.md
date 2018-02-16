@@ -83,7 +83,16 @@ with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
 	prediction_file = os.path.join(dir_name, "predictions.txt")
 	target_file = os.path.join(dir_name, "targets.txt")
 ```
-6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom in the data analysis section. Data may be fed into Matlab's classificationLearner to update the classification rule from the simple `round(predictions)` example provided.
+6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom code in the data analysis section. When the program is run for the first time, data may be fed into Matlab's classificationLearner, from which the desired classifier (_trainedClassifier.mat_) can be generated and applied to subsequent tests.
+```matlab
+trainClass = true;  % true = train classifier, false = load model
+```
+A trained classification model can then be loaded at a later point. Simply select save and load paths for the model.
+```matlab
+save('../trainedModel.mat','trainedModel'); % Save model
+...
+load('../trainedModel.mat'); % Load model
+```
 
 ![Example NetworkAnalysis.m Output](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/ExamplePredictionAnalysis.png)
 
