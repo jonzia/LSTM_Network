@@ -71,9 +71,9 @@ with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 4. (Optional) Analyze network parameters using [Tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard).
 5. (Optional) Run *test_bench.py* to analyze trained network outputs for a validation dataset (predictions and targets saved as .txt files). Ensure to select the correct filepaths for the validation dataset, and model load path, as well as the desired Filewriter save path and output .txt filenames. For proper analysis, also ensure that the user-defined parameters at the file header are the same as those used for training the network.
 ```python
-dir_name = "/Users/jonathanzia/Dropbox/Documents/Projects/TensorFlow"
+dir_name = "/Users/username"
 with tf.name_scope("Training_Data"):	# Testing dataset
-	Dataset = os.path.join(dir_name, "UC Irvine Dataset/dataset/S01R02_lpf.csv")
+	Dataset = os.path.join(dir_name, "datafile.csv")
 with tf.name_scope("Model_Data"):		# Model load path
 	load_path = os.path.join(dir_name, "checkpoints/model")
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
