@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# LSTM Network Test Bench for LSTM_Network v1.3.3
+# LSTM Network Test Bench for LSTM_Network v1.3.5
 # Created by: Jonathan Zia
 # Last Modified: Wednesday, Feb 14, 2018
 # Georgia Institute of Technology
@@ -23,9 +23,9 @@ lstm = net.Network()
 # User-Defined Constants
 # ----------------------------------------------------
 # Training
-I_KEEP_PROB = 1.0   # Input keep probability / LSTM cell
-O_KEEP_PROB = 1.0   # Output keep probability / LSTM cell
-WINDOW_INT = 10     # Rolling window step interval
+I_KEEP_PROB = 1.0               # Input keep probability / LSTM cell
+O_KEEP_PROB = 1.0               # Output keep probability / LSTM cell
+WINDOW_INT = 1                  # Rolling window step interval
 
 
 # ----------------------------------------------------
@@ -33,11 +33,11 @@ WINDOW_INT = 10     # Rolling window step interval
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = "/Directory"
+dir_name = "D:\\Documents"
 with tf.name_scope("Training_Data"):    # Testing dataset
-    Dataset = os.path.join(dir_name, "data/filename.csv")
+    Dataset = os.path.join(dir_name, "datafile.csv")
 with tf.name_scope("Model_Data"):       # Model load path
-    load_path = os.path.join(dir_name, "checkpoints/model")
+    load_path = os.path.join(dir_name, "checkpoints\\model_op")
 with tf.name_scope("Filewriter_Data"):  # Filewriter save path
     filewriter_path = os.path.join(dir_name, "test_bench")
 with tf.name_scope("Output_Data"):      # Output data filenames (.txt)
@@ -174,7 +174,7 @@ with tf.Session() as sess:
 
         try: # While there is no out-of-bounds exception
             # Obtaining batch of features and labels from TRAINING dataset(s)
-            features, labels = extract_data(Dataset, lstm.batch_size, lstm.num_steps, lstm.input_features, lstm.output_classes,step)
+            features, labels = extract_data(Dataset, lstm.batch_size, lstm.num_steps, lstm.input_features, lstm.output_classes, step)
         except:
             break
 

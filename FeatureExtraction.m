@@ -1,7 +1,7 @@
 % -------------------------------------------------------------------------
-% Dataset Feature Extraction
+% Dataset Feature Extraction Rev 02
 % Created by: Jonathan Zia
-% Last Edited: Thursday, Feb 8 2018
+% Last Edited: Tuesday, Feb 27 2018
 % Georgia Institute of Technology
 % -------------------------------------------------------------------------
 
@@ -16,6 +16,9 @@ LPF = false; % Enable/Disable low-pass filtering
 RMS = false; % Enable/Disable RMS calculation
 FA = false; % Enable/Disable Fourier Analysis
 
+% Normalize LPF data?
+norm_LPF = false;
+
 % Window size for analysis
 window_size = 100;
 
@@ -23,35 +26,51 @@ window_size = 100;
 % into frequency bins and averaged to a discrete value, which is then
 % passed as an input feature. Select number of frequency bins:
 freq_bins = 9;
-
-% Specify output filenames for writing processed data to .csv files:
-output_filenames = [""];
+% Then select points per fourier bin OR auto-calculate
+auto = false;
+if auto
+    % Auto-calculate points per bin
+    points_bin = floor((window_size/2-1)/freq_bins);
+else
+    % Select points per bin
+    points_bin = 2;
+end
 
 % Specify number of features, classes, and number of timestamp columns
 feature_num = 9;
 class_num = 3;
 timestamp = 1;
 
+% Specify output filenames for writing processed data to .csv files:
+output_filenames = ["datafile_processed.csv"];
+
 
 %% ------------------------------------------------------------------------
 % Import CSV Data
 % -------------------------------------------------------------------------
 % Insert list of filenames from which to import data
-filename_list = [""];
+filename_list = ["datafile.csv"];
 % Obtain number of data files
 num_files = size(filename_list);
 % Import data into array of size [num_files x data_points x data_columns]
 data = cell(num_files(2), 1);
 for i = 1:num_files(2)
+    disp("Importing File " + i);
     data{i} = importdata(filename_list(i));
+    % If the data is imported as a character array, append timestamps
+    if isfield(data{i},'rowheaders')
+        num_elem = size(data{i}.data);
+        t_stamps = 1:num_elem(1);
+        data{i} = [transpose(t_stamps) data{i}.data];
+    end
 end
 
 
 %% ------------------------------------------------------------------------
 % Data Processing
 % -------------------------------------------------------------------------
-% Insert data preprocessing code here
 
+% Custom pre-processing code here
 
 %% ------------------------------------------------------------------------
 % Low-Pass Time-Series Filtering
@@ -64,8 +83,27 @@ if LPF
     coeff2 = [4.79327748470482e-06,0.000263147414205478,0.000563196897790071,0.00112175527826935,0.00198999107314703,0.00325452633957827,0.00499929894323254,0.00729772496385976,0.0102035785723195,0.0137415157978823,0.0178995587752836,0.0226229466606835,0.0278114170707222,0.0333199221973773,0.0389640757832623,0.0445284393677857,0.0497795305685804,0.0544804071594470,0.0584072222157913,0.0613654721249311,0.0632042118363297,0.0638280730984335,0.0632042118363297,0.0613654721249311,0.0584072222157913,0.0544804071594470,0.0497795305685804,0.0445284393677857,0.0389640757832623,0.0333199221973773,0.0278114170707222,0.0226229466606835,0.0178995587752836,0.0137415157978823,0.0102035785723195,0.00729772496385976,0.00499929894323254,0.00325452633957827,0.00198999107314703,0.00112175527826935,0.000563196897790071,0.000263147414205478,4.79327748470482e-06];
     % Filtering data columns
     for file = 1:num_files(2) % For each file...
+        disp("Filtering datapoints for File " + file);
         % Filter columns in each file
         data{file}(:,1+timestamp:feature_num+timestamp) = filter(coeff,1,data{file}(:,1+timestamp:feature_num+timestamp),[],1);
+    end
+    
+    % If normalize LPF is selected...
+    if norm_LPF
+        % For each file...
+        for file = 1:num_files(2)
+            disp("Normalizing filtered data for File " + file);
+            num_elem = size(data{file});   % Obtain number of datapoints
+            % Obtain normalized values for each datapoint
+%             for i = 1:num_elem(1)
+%                 temp = data{file}(i,1+timestamp:feature_num+timestamp);
+%                 data{file}(i,1+timestamp:feature_num+timestamp) = 100*(temp - mean(temp))./var(temp);
+%             end
+            for i = 1+timestamp:feature_num+timestamp
+                temp = data{file}(:,i);
+                data{file}(:,i) = 100*(temp - mean(temp))./var(temp);
+            end
+        end
     end
 end
 
@@ -78,13 +116,14 @@ if RMS
 
     % For each data file...
     for file = 1:num_files(2)
+        disp("Calculating RMS for File " + file);
 
         % Obtain number of samples in file
         num_elem = size(data{file});
         % Initialize placeholders
         root_mean_square = zeros(num_elem(1)-window_size,num_elem(2));
 
-        % For each sample, obtain FFT columnwise
+        % For each sample, obtain RMS columnwise
         for sample = 1:num_elem(1)-window_size
             % Obtain the RMS over bin_size samples
             root_mean_square(sample,1+timestamp:feature_num+timestamp) = rms(data{file}(sample:sample+window_size,1+timestamp:feature_num+1),1);
@@ -108,12 +147,13 @@ if FA
 
     % For each data file...
     for file = 1:num_files(2)
+        disp("Performing Fourier Analysis on File " + file);
 
         % Obtain number of samples in file
         num_elem = size(data{file});
         % Initialize placeholders
         fourier = cell(num_elem(1)-window_size,1);
-        fourier_av = zeros(num_elem(1)-window_size,freq_bins+class_num+1);
+        fourier_av = zeros(num_elem(1)-window_size,freq_bins+class_num+timestamp);
 
         % For each sample, obtain FFT columnwise
         for sample = 1:num_elem(1)-window_size
@@ -129,18 +169,18 @@ if FA
             end
             % Adding label to fourier_av
             fourier_av(sample,end-class_num+1:end) = data{file}(sample+window_size,end-class_num+1:end);
-            % Adding frequency bin average to fourier_av
-            % Calculate points per bin
-            points_bin = floor((window_size/2-1)/freq_bins);
+            % Adding frequency bins to fourier_av
             % For each bin...
             for i = 1:freq_bins
                 % For all bins before the final one...
-                if i < freq_bins
+                if i < freq_bins && auto
                     % Calculate mean of all points in bin
                     fourier_av(sample,i+timestamp) = mean(mean(fourier{sample}((i-1)*points_bin+1:(i-1)*points_bin+points_bin,:)));
-                else % Else, for the last bin...
+                elseif auto % Else, for the last bin...
                     % Average over the remaining number of points
                     fourier_av(sample,i+timestamp) = mean(mean(fourier{sample}((i-1)*points_bin+1:end,:)));
+                else % If points_bin was specified
+                    fourier_av(sample,i+timestamp) = mean(mean(fourier{sample}((i-1)*points_bin+1:(i-1)*points_bin+points_bin,:)));
                 end
             end
         end

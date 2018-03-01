@@ -1,7 +1,7 @@
 # ----------------------------------------------------
-# LSTM Network Implementation using Tensorflow 1.3.3
+# LSTM Network Implementation using Tensorflow 1.3.5
 # Created by: Jonathan Zia
-# Last Modified: Wednesday, Feb 14, 2018
+# Last Modified: Monday, Feb 26, 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -25,15 +25,13 @@ lstm = net.Network()
 # User-Defined Constants
 # ----------------------------------------------------
 # Training
-I_KEEP_PROB = 1.0		# Input keep probability / LSTM cell
-O_KEEP_PROB = 1.0		# Output keep probability / LSTM cell
 NUM_TRAINING = 1000		# Number of training batches (balanced minibatches)
 NUM_VALIDATION = 100	# Number of validation batches (balanced minibatches)
 WINDOW_INT_t = 1		# Rolling window step interval for training (rolling window)
 WINDOW_INT_v = 1000		# Rolling window step interval for validation (rolling window)
 
 # Load File
-LOAD_FILE = False 	# Load initial LSTM model from saved checkpoint?
+LOAD_FILE = False 		# Load initial LSTM model from saved checkpoint?
 
 # Input Pipeline
 # Enter "True" for balanced mini-batching and "False" for rolling-window
@@ -45,16 +43,21 @@ MINI_BATCH = True
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = "/Directory"
+dir_name = "D:\\Documents"
 with tf.name_scope("Training_Data"):	# Training dataset
-	tDataset = os.path.join(dir_name, "data/filename.csv")
+	tDataset = os.path.join(dir_name, "datafile.csv")
 with tf.name_scope("Validation_Data"):	# Validation dataset
-	vDataset = os.path.join(dir_name, "data/filename")
-with tf.name_scope("Model_Data"):		# Model save path
-	save_path = os.path.join(dir_name, "checkpoints/model")		# Save model at each step
-	save_path_op = os.path.join(dir_name, "checkpoints/model_op")	# Save optimal model
+	vDataset = os.path.join(dir_name, "datafile.csv")
+with tf.name_scope("Model_Data"):		# Model save/load paths
+	load_path = os.path.join(dir_name, "checkpoints\\model")		# Load previous model
+	save_path = os.path.join(dir_name, "checkpoints\\model")		# Save model at each step
+	save_path_op = os.path.join(dir_name, "checkpoints\\model_op")	# Save optimal model
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = os.path.join(dir_name, "output")
+with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
+	# These .txt files will contain loss data for Matlab analysis
+	training_loss = os.path.join(dir_name, "training_loss.txt")
+	validation_loss = os.path.join(dir_name, "validation_loss.txt")
 
 # Obtain length of testing and validation datasets
 file_length = len(pd.read_csv(tDataset))
@@ -73,7 +76,7 @@ def init_values(shape):
 	temp = tf.truncated_normal(shape, stddev=0.1)
 	return tf.Variable(temp)
 
-def extract_data_balanced(filename, batch_size, num_steps, input_features, output_classes, f_length):
+def extract_data_balanced(filename, batch_size, num_steps, input_features, output_classes, f_length, balanced=True):
 	"""
 	Extract features and labels from filename.csv in class-balanced batches
 	Returns:
@@ -93,8 +96,14 @@ def extract_data_balanced(filename, batch_size, num_steps, input_features, outpu
 	# Define classes:
 	classes = np.identity(output_classes) # Returns classes as one-hot rows
 	for i in range(batch_size):
-		# Randomly select one of the three classes for the sample in this batch
-		temp_class = classes[rd.randint(0, output_classes-1),:]
+
+		# Select one of the three classes for the sample in this batch based on a probability distribution
+		# OR perform uniformly balanced minibatching
+		if balanced == False:
+			temp_class = classes[np.random.choice(output_classes, p=[0.5,0.25,0.25]),:]
+		else:
+			temp_class = classes[rd.randint(0, output_classes-1),:]
+
 		# Repeat until proper label is found
 		proper_label = False
 		while proper_label == False:
@@ -146,15 +155,52 @@ def extract_data_window(filename, batch_size, num_steps, input_features, output_
 	# Return feature and label batches
 	return feature_batch, label_batch
 
+def set_decay_rate(decay_type, learning_rate_init, learning_rate_end, num_training):
+	"""
+	Calcualte decay rate for specified decay type
+	Returns: Scalar decay rate
+	"""
+
+	if decay_type == 'none':
+		return 0
+	elif decay_type == 'exp':
+		return math.pow((learning_rate_end/learning_rate_init),(1/num_training))
+	elif decay_type == 'inv_time':
+		return ((learning_rate_init/learning_rate_end)-1)/num_training
+	elif decay_type == 'nat_exp':
+		return (-1/num_training)*math.log(learning_rate_end/learning_rate_init)
+	else:
+		return 0
+
+
+
+def decayed_rate(decay_type, decay_rate, learning_rate_init, step):
+	"""
+	Calculate decayed learning rate for specified parameters
+	Returns: Scalar decayed learning rate
+	"""
+
+	if decay_type == 'none':
+		return learning_rate_init
+	elif decay_type == 'exp':
+		return learning_rate_init*math.pow(decay_rate,step)
+	elif decay_type == 'inv_time':
+		return learning_rate_init/(1+decay_rate*step)
+	elif decay_type == 'nat_exp':
+		return learning_rate_init*math.exp(-decay_rate*step)
+
 
 # ----------------------------------------------------
-# Importing FoG Dataset Batches
+# Importing Session Parameters
 # ----------------------------------------------------
 # Create placeholders for inputs and target values
 # Input dimensions: BATCH_SIZE x NUM_STEPS x INPUT_FEATURES
 # Target dimensions: BATCH_SIZE x OUTPUT_CLASSES
 inputs = tf.placeholder(tf.float32, [lstm.batch_size, lstm.num_steps, lstm.input_features], name="Input_Placeholder")
 targets = tf.placeholder(tf.float32, [lstm.batch_size, lstm.output_classes], name="Target_Placeholder")
+
+# Create placeholder for learning rate
+learning_rate = tf.placeholder(tf.float32, name="Learning_Rate_Placeholder")
 
 
 # ----------------------------------------------------
@@ -167,7 +213,7 @@ with tf.name_scope("LSTM_Network"):
 		# Creating basic LSTM cell
 		cell = tf.contrib.rnn.BasicLSTMCell(lstm.num_lstm_hidden)
 		# Adding dropout wrapper to cell
-		cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=I_KEEP_PROB, output_keep_prob=O_KEEP_PROB)
+		cell = tf.nn.rnn_cell.DropoutWrapper(cell, input_keep_prob=lstm.i_keep_prob, output_keep_prob=lstm.o_keep_prob)
 		# Stacking LSTM cells
 		cells.append(cell)
 	stacked_lstm = tf.contrib.rnn.MultiRNNCell(cells, state_is_tuple=True)
@@ -207,7 +253,7 @@ with tf.name_scope("Reformat_Logits"):
 # Calculating softmax cross entropy of labels and logits
 loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=targets, logits=logits)
 loss = tf.reduce_mean(loss)
-optimizer = tf.train.AdamOptimizer().minimize(loss)
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
 # Obtain predictions from logits
 predictions = tf.nn.softmax(logits)
@@ -218,6 +264,8 @@ predictions = tf.nn.softmax(logits)
 # ----------------------------------------------------
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()	# Instantiate Saver class
+t_loss = []	# Placeholder for training loss values
+v_loss = []	# Placeholder for validation loss values
 with tf.Session() as sess:
 	# Create Tensorboard graph
 	writer = tf.summary.FileWriter(filewriter_path, sess.graph)
@@ -226,7 +274,7 @@ with tf.Session() as sess:
 	# If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
 	if LOAD_FILE:
 		# Restore saved session
-		saver.restore(sess, save_path)
+		saver.restore(sess, load_path)
 	else:
 		# Initialize the variables
 		sess.run(init)
@@ -249,6 +297,11 @@ with tf.Session() as sess:
 	start_time = time.time()
 	# Initialize optimal loss
 	loss_op = 0
+	# Determine learning rate decay
+	decay_rate = set_decay_rate(lstm.decay_type, lstm.learning_rate_init, lstm.learning_rate_end, NUM_TRAINING)
+
+	if lstm.decay_type != 'none':
+		print('\nLearning Decay Rate = ', decay_rate)
 
 	# Set number of trials to NUM_TRAINING
 	for step in range(0,step_range,window_int_t):
@@ -271,15 +324,22 @@ with tf.Session() as sess:
 		if True:
 			# Print step
 			print("\nOptimizing at step", step)
-			# Input data
-			data = {inputs: features, targets:labels}
+
+			# Calculate time-decay learning rate:
+			decayed_learning_rate = decayed_rate(lstm.decay_type, decay_rate, lstm.learning_rate_init, step)
+
+			# Input data and learning rate
+			feed_dict = {inputs: features, targets:labels, learning_rate:decayed_learning_rate}
 			# Run optimizer, loss, and predicted error ops in graph
-			predictions_, targets_, _, loss_ = sess.run([predictions, targets, optimizer, loss], feed_dict=data)
+			predictions_, targets_, _, loss_ = sess.run([predictions, targets, optimizer, loss], feed_dict=feed_dict)
+
+			# Record loss
+			t_loss.append(loss_)
 
 			# Evaluate network and print data in terminal periodically
 			with tf.name_scope("Validation"):
 				# Conditional statement for validation and printing
-				if step % 100 == 0:
+				if step % 50 == 0:
 					print("\nMinibatch train loss at step", step, ":", loss_)
 
 					# Evaluate network
@@ -302,6 +362,8 @@ with tf.Session() as sess:
 						loss_test = sess.run(loss, feed_dict=data_test)
 						test_loss.append(loss_test)
 
+					# Record loss
+					v_loss.append(np.mean(test_loss))
 					# Print test loss
 					print("Test loss: %.3f" % np.mean(test_loss))
 					# For the first step, set optimal loss to test loss
@@ -312,7 +374,7 @@ with tf.Session() as sess:
 						loss_op = np.mean(test_loss)
 						save_op = True 	# Save model as new optimal model
 
-					# Print predictiond and targets for reference
+					# Print predictions and targets for reference
 					print("Predictions:")
 					print(predictions_)
 					print("Targets:")
@@ -346,6 +408,18 @@ with tf.Session() as sess:
 				sec_remaining = round(avg_elapsed_time*(file_length-step)/window_int_t)
 			min_remaining = round(sec_remaining/60)
 			print("\nTime Remaining: %d minutes" % min_remaining)
+
+			# Print learning rate if learning rate decay is used
+			if lstm.decay_type != 'none':
+				print("\nLearning Rate = ", decayed_learning_rate)
+
+	# Write training and validation loss to file
+	t_loss = np.array(t_loss)
+	v_loss = np.array(v_loss)
+	with open(training_loss, 'a') as file_object:
+		np.savetxt(file_object, t_loss)
+	with open(validation_loss, 'a') as file_object:
+		np.savetxt(file_object, v_loss)
 
 	# Close the writer
 	writer.close()
