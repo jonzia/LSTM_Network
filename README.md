@@ -144,7 +144,7 @@ TIMESTAMP | FEATURE_1 ... FEATURE_N | LABEL_1 ... LABEL_M
 ----------|-------------------------|------
 ... | ... | ...
 
-Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature and label columns may be variable and is set by the user-defined parameters `INPUT_FEATURES` and `OUTPUT_CLASSES` respectively at the top of the program. The labels should be a one-hot vector when using the provided softmax loss function.
+Note that the timestamp column is ignored by default and any column heading should be removed, as these may be read as input data. The number of feature and label columns may be variable and is set by the user-defined parameters `self.input_features` and `self.output_classes` respectively in *network.py*. The labels should be a one-hot vector when using the provided softmax classifier.
 
 **(2)** The program will output training loss, validation loss, percent completion and predictions/targets at each mini-batch. It will also output the current learning rate and time remaining at the specified number of steps. To adjust these display settings, edit the lines below:
 ```python
