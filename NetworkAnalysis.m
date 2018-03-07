@@ -38,7 +38,7 @@ target_cat = zeros(filesize(1),1);
 one_hots = eye(numClasses);
 for i = 1:filesize(1)
     for j = 1:numClasses
-        if isequal(targets(i,:),one_hots(j))
+        if isequal(targets(i,:),one_hots(j,:))
             target_cat(i) = j;
         end
     end
