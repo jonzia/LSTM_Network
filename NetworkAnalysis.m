@@ -1,7 +1,7 @@
 % -------------------------------------------------------------------------
-% LSTM Network Analysis
+% LSTM Network Analysis Rev 03
 % Created by: Jonathan Zia
-% Last Edited: Friday, Feb 16 2018
+% Last Edited: Thursday, March 5 2018
 % Georgia Institute of Technology
 % -------------------------------------------------------------------------
 
@@ -14,6 +14,11 @@ numClasses = 3;
 
 % Toggle data visualization
 visualize = true;
+
+% Toggle ROC curve generation
+ROC = true;
+% Select class for which to generate ROC curve
+rocClass = 2;
 
 %% ------------------------------------------------------------------------
 % Load Data
@@ -55,7 +60,7 @@ for i = 1:filesize(1)
     end
 end
 
-% Obtain precision, recall, and F1 score w.r.t. class 1, 2, or 3
+% Obtain precision, recall, and F1 score w.r.t. [class]
 % Initialize counters
 for class = 1:numClasses
     TP = 0; TN = 0; FP = 0; FN = 0;
@@ -78,15 +83,41 @@ for class = 1:numClasses
         end
     end
 
-    % Display precision, recall, and F1 w.r.t. [class]
+    % Display precision, recall, sensitivity, specificity, and F1 w.r.t. [class]
     precision = TP/(TP+FP);
     recall = TP/(TP+FN);
+    sensitivity = TP/(TP+FN);
+    specificity = TN/(TN+FP);
     disp("For class " + class)
     disp("-------------")
     disp("Precision: " + precision)
     disp("Recall: " + recall)
+    disp("Sensitivity: " + sensitivity)
+    disp("Specificity: " + specificity)
     disp("F1: " + 2*precision*recall/(precision+recall) + newline)
 end
+
+% Obtain statistics for "alarm" class (classes 2 and 3)
+TP = 0; TN = 0; FP = 0; FN = 0;
+for i = 1:filesize(1)
+    % For predictions in class [class]...
+    if class_predictions(i) == 2 || class_predictions(i) == 3
+        % If the sample was classified correctly, increment TP
+        if target_cat(i) == 2 || target_cat(i) == 3
+            TP = TP + 1;
+        else % Else, increment FP
+            FP = FP + 1;
+        end
+    else % For predictions not in [class]
+        % If the target was in [class], increment FN
+        if target_cat(i) == 2 || target_cat(i) == 3
+            FN = FN + 1;
+        else % If the targetwas not in [class] either
+            TN = TN + 1;
+        end
+    end
+end
+
 
 %% ------------------------------------------------------------------------
 % Visualize Data
@@ -141,4 +172,66 @@ if visualize
 
     % Release graph
     hold off
+end
+
+if ROC
+    % The following is the ROC curve for the trained network
+    
+    % Initialize placeholders
+    sensitivity_roc = []; specificity_roc = [];
+    % Step size for ROC curve
+    for j = 0:0.001:1
+        % For each prediction vector
+        for i = 1:filesize(1)
+            % If the value for class 2 > j
+            if predictions(i,2) >= j
+                % Predict class 2
+                class_predictions(i) = 2;
+            else
+                % If class 1 > class 3, predict class 1
+                if predictions(i,1) > predictions(i,3)
+                    class_predictions(i) = 1;
+                else
+                    % Predict class 3
+                    class_predictions(i) = 3;
+                end
+            end
+        end
+        
+        TP = 0; TN = 0; FP = 0; FN = 0;
+        for i = 1:filesize(1)
+            % For predictions in class [class]...
+            if class_predictions(i) == rocClass
+                % If the sample was classified correctly, increment TP
+                if target_cat(i) == rocClass
+                    TP = TP + 1;
+                else % Else, increment FP
+                    FP = FP + 1;
+                end
+            else % For predictions not in [class]
+                % If the target was in [class], increment FN
+                if target_cat(i) == rocClass
+                    FN = FN + 1;
+                else % If the targetwas not in [class] either
+                    TN = TN + 1;
+                end
+            end
+        end
+        
+        % Obtain sensitivity and specificity
+        sensitivity_roc = [sensitivity_roc TP/(TP+FN)];
+        specificity_roc = [specificity_roc TN/(TN+FP)];
+    end
+    
+    % Prepare graph with desired format
+    figure(3); hold on; grid on
+    plot((1-specificity_roc),sensitivity_roc)
+    % Plot reference line
+    t = linspace(0,1); y = t;
+    plot(t,y,'--k')
+    title('ROC Curve'); xlabel('1 - specificity'); ylabel('Sensitivity');
+    
+    % Display AUROC
+    AUC = trapz(specificity_roc,sensitivity_roc);
+    disp("AUC: " + AUC + newline)
 end
