@@ -6,7 +6,7 @@ LSTM network implemented in Tensorflow designed for time-series prediction and c
 ## Description
 This program is an LSTM network written in Python for Tensorflow. The architecture of the network is fully-customizable within the general framework, namely an LSTM network trained with a truncated BPTT algorithm where the output at each timestep is fed through a fully-connected layer to a variable number of outputs. The the input pipeline can be either rolling-window with offset batches or balanced minibatches and weights updated via truncated BPTT. The error is calculated via `tf.nn.softmax_cross_entropy_with_logits_v2` and reduced via `tf.train.AdamOptimizer()`. This architecture was designed to solve time-series classification of data in two or more categories (one-hot encoded).
 
-Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. *FeatureExtraction.m* contains code designed for pre-processing the input data (including low-pass filtering, RMS, and Fourier analysis), however the data processing section may be adapted for any purpose. *NetworkAnalysis.m*, contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification and calculating precision, recall, and F1 scores, though it may also be adapted for any purpose.
+Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. *FeatureExtraction.m* contains code designed for pre-processing the input data (including low-pass filtering, RMS, and Fourier analysis), however the data processing section may be adapted for any purpose. *NetworkAnalysis.m*, contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification and calculating objective metrics, though it may also be adapted for any purpose.
 
 ![Tensorboard Graph](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/Graph122.PNG)
 
@@ -118,18 +118,22 @@ with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
 	prediction_file = os.path.join(dir_name, "predictions.txt")
 	target_file = os.path.join(dir_name, "targets.txt")
 ```
-6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom code in the data analysis section. The code provided obtains one-hot vectors from predictions as well as integer classifications for subsequent data analysis and visualization. Simply specify preferences in the header.
+6. (Optional) Run *NetworkAnalysis.m* to graphically analyze predictions and targets for the trained network and/or add custom code in the data analysis section. The code provided obtains one-hot vectors from predictions as well as integer classifications for subsequent data analysis and visualization. The program outputs sensitivity, specificity, precision, recall, and F1 for each class as well as the ROC curve and AUROC for a specified class. Simply specify preferences in the header.
 ```matlab
 % Specify number of classes
 numClasses = 3;
 % Toggle data visualization
 visualize = true;
+% Toggle ROC curve generation
+ROC = true;
+% Select class for which to generate ROC curve
+rocClass = 2;
 ```
 
 ![Example NetworkAnalysis.m Output](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/ExamplePredictionAnalysis.png)
 
 ### Update Log
-_v1.3.5_: Added support for several types of learning rate decay. Minibatch training and validation losses are written to output files for improved analysis of network performance. Improved network analysis and feature extraction scripts.
+_v1.3.5_: Added support for several types of learning rate decay. Minibatch training and validation losses are written to output files for improved analysis of network performance. Improved network analysis and feature extraction scripts. Updated *NetworkAnalysis.m* metrics reporting and added ROC analysis.
 
 _v1.3.1_ - _v1.3.4_: Improved user interface and ability to handle a variable number of output classes as one-hot vectors. Introduced balanced minibatch input pipeline. Added ability to save optimal model state as checkpoint. Included *network.py* so that network architecture is preserved across all python files. Bug fixes and improvements.
 
