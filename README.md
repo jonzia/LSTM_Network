@@ -8,6 +8,8 @@ This program is an LSTM network written in Python for Tensorflow. The architectu
 
 Included with the LSTM program are Matlab and Python programs for processing .csv datasets and graphically analyzing the trained network. *FeatureExtraction.m* contains code designed for pre-processing the input data (including low-pass filtering, RMS, and Fourier analysis), however the data processing section may be adapted for any purpose. *NetworkAnalysis.m*, contains code designed for visualizing network performance for 3 (one-hot) to 8 (binary-encoded) categories of classification and calculating objective metrics, though it may also be adapted for any purpose.
 
+![Tensorboard Graph](https://raw.githubusercontent.com/jonzia/LSTM_Network/master/Media/Graph122.PNG?token=AQD91W6vWMetqcS3tdrqcFNZCLdO10LNks5aytW5wA%3D%3D)
+
 ## Features
 - Fully-customizable network architecture and training setup.
 - Input data processing and trained network validation and analysis code included.
